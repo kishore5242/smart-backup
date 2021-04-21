@@ -19,12 +19,12 @@
 		<a class="navbar-brand" href="#">SmartBackup</a>
 	</nav>
 
-	<main role="main" class="container">
-
+	<div class="container-fluid">
+	
 		<div class="starter-template">
-			<h1>Smart backup tool</h1>
+			<h1>Review</h1>
 			<h2>
-				<span th:text="${message}"></span>
+				<span>Please review the files</span>
 			</h2>
 		</div>
 
@@ -43,9 +43,22 @@
 			</div>
 			<button type="submit" class="btn btn-primary">Review</button>
 		</form>
-
-
-	</main>
+		
+		<div class="row">
+			<div th:each="task : ${tasks}" class="col-md-1">
+				<img th:src="@{'/thumbnails/' + ${task}}" class="img-responsive preview" />
+			</div>
+		</div>
+<!-- 		
+		<div class="starter-template">
+			<ol>
+				<li th:each="task : ${tasks}">
+					<img th:src="@{'/thumbnails/' + ${task}}" class="img-responsive" />
+				</li>
+			</ol>
+		</div>
+ -->
+	</div>
 	<!-- /.container -->
 
 	<script type="text/javascript"
