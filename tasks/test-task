@@ -1,0 +1,4 @@
+# copy to destination
+/home/kishore/Space/projects/temp/source/ >1> /home/kishore/Space/projects/temp/destination/
+# copy to backup
+/home/kishore/Space/projects/temp/source/ >2> /home/kishore/Space/projects/temp/backup/
