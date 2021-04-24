@@ -48,7 +48,7 @@ public class SmartService {
 		try {
 			if (cmd.getOperation().getId().equals(100)) {
 				logger.info("Copying all from {} into {}", cmd.getLhs(), cmd.getRhs());
-				fileService.copyAll(cmd.getLhs(), cmd.getRhs());
+				fileService.copyAll(cmd.getLhs(), cmd.getRhs(), new SmartFileFilter(store, cmd));
 				logger.info("Done");
 			} else if (cmd.getOperation().getId().equals(200)) {
 				logger.info("Copying images from {} into {}", cmd.getLhs(), cmd.getRhs());

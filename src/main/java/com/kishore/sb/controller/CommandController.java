@@ -35,9 +35,6 @@ public class CommandController {
 	@Autowired
 	SmartStore store;
 
-	@Value("${welcome.message}")
-	private String message;
-
 	@GetMapping("/")
 	public String getAllCommands(Model model) {		
 		model.addAttribute("getAllCommands", store.getAllCommands());
@@ -88,7 +85,6 @@ public class CommandController {
 	public String saveCommand(@ModelAttribute Command command, Model model) {
 		command.setStatus("created");
 		store.saveCommand(command);		
-		model.addAttribute("message", message);
 		model.addAttribute("getAllCommands", store.getAllCommands());
 		return "redirect:/cmd/";
 	}

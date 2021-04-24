@@ -15,6 +15,8 @@ import org.springframework.boot.ApplicationRunner;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
+import com.kishore.sb.jpa.SmartStore;
+import com.kishore.sb.model.Operation;
 import com.kishore.sb.model.Task;
 import com.kishore.sb.service.SmartService;
 
@@ -30,6 +32,9 @@ public class TasksRunner implements ApplicationRunner {
 	@Autowired
 	SmartService smartService;
 	
+	@Autowired
+	SmartStore store;
+	
     @Override
     public void run(ApplicationArguments applicationArguments) throws Exception {
     	
@@ -44,19 +49,25 @@ public class TasksRunner implements ApplicationRunner {
 //    		smartService.runTask(task);
 //    	}
     	
-    	logger.info("Creating default directories...");
-    	createDirectories();
+    	logger.info("Init data...");
+    	initData();
     	
     }
-    
-	private void createDirectories() {
-		try {
-			Path databasePath = Paths.get("database/");
-			Files.createDirectories(databasePath);
-			//Path logPath = Paths.get("logs/");
-			//Files.createDirectories(logPath);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+	
+	private void initData() {
+		Operation copyOp = new Operation();
+		copyOp.setId(100);
+		copyOp.setName("Copy all");
+		copyOp.setOrganize(false);
+		copyOp.setExtensions("all");
+		
+		Operation copyImgOp = new Operation();
+		copyImgOp.setId(200);
+		copyImgOp.setName("Copy images");
+		copyImgOp.setOrganize(false);
+		copyImgOp.setExtensions("jpg,jpeg,png,gif");
+		
+		store.saveOperation(copyOp);
+		store.saveOperation(copyImgOp);
 	}
 }

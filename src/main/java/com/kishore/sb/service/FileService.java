@@ -19,8 +19,18 @@ public class FileService {
 	@Autowired
 	SmartStore store;
 
-	public void copyAll(String sourceDir, String DestDir) throws IOException {
-		FileUtils.copyDirectory(new File(sourceDir), new File(DestDir));
+	public void copyAll(String sourceDir, String DestDir, SmartFileFilter filter) throws IOException {
+		
+		File source = new File(sourceDir);
+		File destination = new File(DestDir);
+		
+		filter.setExtentions(null);
+		Integer size = countFiles(source, null);
+		filter.setTotalCount(size);
+		filter.setProcessedCount(0);
+		
+		
+		FileUtils.copyDirectory(source, destination, filter);
 	}
 	
 	public void copyImages(String sourceDir, String DestDir, SmartFileFilter filter) throws IOException {

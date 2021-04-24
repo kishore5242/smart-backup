@@ -55,18 +55,29 @@ public class SmartFileFilter implements FileFilter {
 	}
 
 	public boolean accept(File file) {
+		
+		if(extentions == null) {
+			record();
+			return true;
+		}
+		
         for (String extension : extentions) {
             if (file.getName().toLowerCase().endsWith(extension)) {
-            	processedCount ++;
-            	logger.info("copying {}/{}", processedCount, totalCount);
-            	int percentage = (processedCount / totalCount ) * 100;
-            	if(percentage % 10 == 0) {
-            		cmd.setStatus(processedCount + "/" + totalCount);
-            		store.saveCommand(cmd);
-            	}
+            	record();
                 return true;
             }
         }
+        
         return false;
     }
+
+	private void record() {
+    	processedCount ++;
+    	logger.info("copying {}/{}", processedCount, totalCount);
+    	int percentage = (processedCount / totalCount ) * 100;
+    	if(percentage % 10 == 0) {
+    		cmd.setStatus(processedCount + "/" + totalCount);
+    		store.saveCommand(cmd);
+    	}
+	}
 }

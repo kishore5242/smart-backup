@@ -9,6 +9,7 @@
 
 <link rel="stylesheet" th:href="@{/webjars/bootstrap/4.2.1/css/bootstrap.min.css}" />
 <link rel="stylesheet" th:href="@{/css/main.css}" />
+<link rel="stylesheet" th:href="@{/font-awesome/css/font-awesome.min.css}" />
 
 </head>
 
@@ -28,6 +29,7 @@
 					<th scope="col">Destination</th>
 					<th scope="col"></th>
 					<th scope="col"></th>
+					<th scope="col">Status</th>
 				</tr>
 			</thead>
 			<tbody>
@@ -36,14 +38,14 @@
 					<td th:text="${command.operation.name}"></td>
 					<td th:text="${command.rhs}"></td>
 					<td>
-						<a th:href="@{'/cmd/edit/' + ${command.id}}">Edit</a>
-						<a th:href="@{'/cmd/delete/' + ${command.id}}">Delete</a>
+						<a th:href="@{'/cmd/edit/' + ${command.id}}"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></a>
+						<a th:href="@{'/cmd/delete/' + ${command.id}}"><i class="fa fa-trash-o" aria-hidden="true"></i></a>
 					</td>
 					<td th:switch="${command.status}">
-						<a th:case="'created'" th:href="@{'/cmd/run/' + ${command.id}}" type="button" class="btn btn-success">Run</a>
-						<a th:case="'completed'" th:href="@{'/cmd/run/' + ${command.id}}" type="button" class="btn btn-success">Run</a>
-						<span th:case="*" th:text="${command.status}">status</span>
+						<a th:case="'created'" th:href="@{'/cmd/run/' + ${command.id}}"><i class="fa fa-play" aria-hidden="true"></i></a>
+						<a th:case="'completed'" th:href="@{'/cmd/run/' + ${command.id}}"><i class="fa fa-repeat" aria-hidden="true"></i></a>
 					</td>
+					<td th:text="${command.status}"></td>
 				</tr>
 			</tbody>
 		</table>
