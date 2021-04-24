@@ -13,6 +13,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.kishore.sb.TasksRunner;
+import com.kishore.sb.filter.SmartFileFilter;
+import com.kishore.sb.jpa.SmartStore;
 import com.kishore.sb.model.Command;
 import com.kishore.sb.model.Task;
 
@@ -23,6 +25,9 @@ public class SmartService {
 
 	@Autowired
 	FileService fileService;
+	
+	@Autowired
+	SmartStore store;
 
 	public List<Task> getTasks(File taskDirectory) throws IOException {
 		Collection<File> taskFiles = FileUtils.listFiles(taskDirectory, null, false);
@@ -42,20 +47,23 @@ public class SmartService {
 	public void runCommand(Command cmd) {
 		try {
 			if (cmd.getOperation().getId().equals(100)) {
-				logger.info(cmd.getComment());
+				logger.info("Copying all from {} into {}", cmd.getLhs(), cmd.getRhs());
 				fileService.copyAll(cmd.getLhs(), cmd.getRhs());
-				logger.info("Done.");
+				logger.info("Done");
 			} else if (cmd.getOperation().getId().equals(200)) {
-				logger.info(cmd.getComment());
-				fileService.copyImages(cmd.getLhs(), cmd.getRhs());
-				logger.info("Done.");
+				logger.info("Copying images from {} into {}", cmd.getLhs(), cmd.getRhs());
+				fileService.copyImages(cmd.getLhs(), cmd.getRhs(), new SmartFileFilter(store, cmd));
+				logger.info("Done");
 			} else if (cmd.getOperation().equals("#")) {
 				logger.info(cmd.getComment());
 			} else {
 				logger.info("Unknown command! {}", cmd.getComment());
 			}
-		} catch (IOException e) {
+		} catch ( Exception e) {
 			logger.error("Command could not be run ", e);
+		} finally {
+			cmd.setStatus("completed");
+			store.saveCommand(cmd);
 		}
 	}
 

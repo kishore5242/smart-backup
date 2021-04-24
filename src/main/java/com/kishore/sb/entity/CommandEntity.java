@@ -29,6 +29,9 @@ public class CommandEntity {
 
 	@Column
 	private String comment;
+	
+	@Column
+	private String status;
 
 	public Integer getId() {
 		return id;
@@ -68,6 +71,14 @@ public class CommandEntity {
 
 	public void setComment(String comment) {
 		this.comment = comment;
+	}
+
+	public String getStatus() {
+		return status;
+	}
+
+	public void setStatus(String status) {
+		this.status = status;
 	}
 
 }

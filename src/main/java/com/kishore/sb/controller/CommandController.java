@@ -62,7 +62,7 @@ public class CommandController {
 		store.saveOperation(copyOp);
 		store.saveOperation(copyImgOp);
 		
-		return "commands";
+		return "redirect:/cmd/";
 	}
 
 	@GetMapping("/new")
@@ -86,30 +86,36 @@ public class CommandController {
 
 	@PostMapping("/save")
 	public String saveCommand(@ModelAttribute Command command, Model model) {
-		store.saveCommand(command);
+		command.setStatus("created");
+		store.saveCommand(command);		
 		model.addAttribute("message", message);
 		model.addAttribute("getAllCommands", store.getAllCommands());
-		return "commands";
+		return "redirect:/cmd/";
 	}
 
 	@GetMapping("/run/{id}")
 	public String runCommand(@PathVariable(name = "id") Integer id, Model model) {
 		Optional<Command> command = store.getCommand(id);
 		if(command.isPresent()) {
-			CompletableFuture.runAsync(() -> smartService.runCommand(command.get()));
+			
+			Command cmd = command.get();
+			cmd.setStatus("started");
+			store.saveCommand(cmd);
+			
+			CompletableFuture.runAsync(() -> smartService.runCommand(cmd));
 		} else {
 			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Command not found");
 		}
 		
 		model.addAttribute("getAllCommands", store.getAllCommands());
-		return "commands";
+		return "redirect:/cmd/";
 	}
 	
 	@GetMapping("/delete/{id}")
 	public String deleteCommand(@PathVariable(name = "id") Integer id, Model model) {
 		store.deleteCommand(id);
 		model.addAttribute("getAllCommands", store.getAllCommands());
-		return "commands";
+		return "redirect:/cmd/";
 	}
 
 }

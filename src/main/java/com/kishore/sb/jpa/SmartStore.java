@@ -6,7 +6,9 @@ import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import com.kishore.sb.entity.CommandEntity;
 import com.kishore.sb.entity.OperationEntity;
@@ -14,6 +16,7 @@ import com.kishore.sb.model.Command;
 import com.kishore.sb.model.Operation;
 
 @Service
+@Transactional
 public class SmartStore {
 	
 	@Autowired
@@ -23,11 +26,25 @@ public class SmartStore {
 	OperationRepository operationRepository;
 	
 	public void saveCommand(Command command) {
-		command.setComment("User created command");
+		
 		Optional<OperationEntity> operationEntity = operationRepository.findById(command.getOperation().getId());
-		commandRepository.save(toEntity(command, operationEntity.get()));
+		CommandEntity commandEntity;
+		if(StringUtils.isEmpty(command.getId())) {
+			command.setComment("User created command");
+			commandEntity = toEntity(command, operationEntity.get());
+		} else {
+			commandEntity = commandRepository.findById(command.getId()).get();
+			commandEntity.setComment(command.getComment());
+			commandEntity.setLhs(command.getLhs());
+			//commandEntity.setOperationEntity(operationEntity.get());
+			commandEntity.setRhs(command.getRhs());
+			commandEntity.setStatus(command.getStatus());
+		}
+
+		commandRepository.save(commandEntity);
 	}
 	
+	@Transactional(isolation = Isolation.READ_UNCOMMITTED)
 	public List<Command> getAllCommands() {
 		return commandRepository.findAll().stream().map(this::fromEntity).collect(Collectors.toList());
 	}
@@ -57,6 +74,7 @@ public class SmartStore {
 		entity.setOperationEntity(operationEntity);
 		entity.setRhs(command.getRhs());
 		entity.setComment(command.getComment());
+		entity.setStatus(command.getStatus());
 		return entity;
 	}
 	
@@ -67,6 +85,7 @@ public class SmartStore {
 		command.setRhs(entity.getRhs());
 		command.setOperation(fromEntity(entity.getOperationEntity()));
 		command.setComment(entity.getComment());
+		command.setStatus(entity.getStatus());
 		return command;
 	}
 	

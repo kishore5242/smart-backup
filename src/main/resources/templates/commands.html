@@ -28,7 +28,6 @@
 					<th scope="col">Destination</th>
 					<th scope="col"></th>
 					<th scope="col"></th>
-					<th scope="col"></th>
 				</tr>
 			</thead>
 			<tbody>
@@ -37,14 +36,14 @@
 					<td th:text="${command.operation.name}"></td>
 					<td th:text="${command.rhs}"></td>
 					<td>
-						<a th:href="@{'/cmd/edit/' + ${command.id}}" type="button" class="btn btn-primary">Edit</a>
+						<a th:href="@{'/cmd/edit/' + ${command.id}}">Edit</a>
+						<a th:href="@{'/cmd/delete/' + ${command.id}}">Delete</a>
 					</td>
-					<td>
-						<a th:href="@{'/cmd/delete/' + ${command.id}}" type="button" class="btn btn-danger">Delete</a>
+					<td th:switch="${command.status}">
+						<a th:case="'created'" th:href="@{'/cmd/run/' + ${command.id}}" type="button" class="btn btn-success">Run</a>
+						<a th:case="'completed'" th:href="@{'/cmd/run/' + ${command.id}}" type="button" class="btn btn-success">Run</a>
+						<span th:case="*" th:text="${command.status}">status</span>
 					</td>
-					<td>
-						<a th:href="@{'/cmd/run/' + ${command.id}}" type="button" class="btn btn-success">Run</a>
-					</td>				
 				</tr>
 			</tbody>
 		</table>
