@@ -41,11 +41,11 @@ public class SmartService {
 
 	public void runCommand(Command cmd) {
 		try {
-			if (cmd.getOperation().equals("1") || cmd.getOperation().equals("all")) {
+			if (cmd.getOperation().getId().equals(100)) {
 				logger.info(cmd.getComment());
 				fileService.copyAll(cmd.getLhs(), cmd.getRhs());
 				logger.info("Done.");
-			} else if (cmd.getOperation().equals("2")) {
+			} else if (cmd.getOperation().getId().equals(200)) {
 				logger.info(cmd.getComment());
 				fileService.copyImages(cmd.getLhs(), cmd.getRhs());
 				logger.info("Done.");

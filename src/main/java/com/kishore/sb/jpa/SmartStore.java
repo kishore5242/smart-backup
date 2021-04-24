@@ -72,7 +72,7 @@ public class SmartStore {
 	
 	private OperationEntity toEntity(Operation operation) {
 		OperationEntity entity = new OperationEntity();
-		//entity.setId(operation.getId());
+		entity.setId(operation.getId());
 		entity.setName(operation.getName());
 		entity.setExtensions(operation.getExtensions());
 		entity.setOrganize(operation.isOrganize());

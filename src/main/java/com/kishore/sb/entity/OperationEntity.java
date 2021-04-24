@@ -12,7 +12,6 @@ import javax.persistence.Table;
 public class OperationEntity {
 	
 	@Id
-	@GeneratedValue(strategy = GenerationType.AUTO)
 	private Integer id;
 	
 	@Column
