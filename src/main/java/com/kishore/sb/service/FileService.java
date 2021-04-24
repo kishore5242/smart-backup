@@ -14,12 +14,12 @@ import com.kishore.sb.model.Command;
 @Service
 public class FileService {
 
-	public void copyAll(File sourceDir, File DestDir) throws IOException {
-		FileUtils.copyDirectory(sourceDir, DestDir);
+	public void copyAll(String sourceDir, String DestDir) throws IOException {
+		FileUtils.copyDirectory(new File(sourceDir), new File(DestDir));
 	}
 	
-	public void copyImages(File sourceDir, File DestDir) throws IOException {
-		FileUtils.copyDirectory(sourceDir, DestDir, new ImageFileFilter());
+	public void copyImages(String sourceDir, String DestDir) throws IOException {
+		FileUtils.copyDirectory(new File(sourceDir), new File(DestDir), new ImageFileFilter());
 	}
 
 	public List<String> getAllLines(File file) throws IOException {

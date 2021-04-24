@@ -1,19 +1,11 @@
 body {
   padding-top: 5rem;
 }
-.starter-template {
-  padding: 3rem 1.5rem;
-  text-align: center;
+
+.operation-select {
+    height: 38px;
 }
 
-h1{
-	color:#0000FF;
-}
-
-h2{
-	color:#FF0000;
-}
-
-.img-responsive.preview {
-    padding: 20px;
+.select-operation {
+	height: 38px;
 }

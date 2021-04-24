@@ -1,6 +1,10 @@
 package com.kishore.sb;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -29,18 +33,30 @@ public class TasksRunner implements ApplicationRunner {
     @Override
     public void run(ApplicationArguments applicationArguments) throws Exception {
     	
-    	File taskDirectory = new File("tasks");
-    	logger.info("Getting tasks...");
+//    	File taskDirectory = new File("tasks");
+//    	logger.info("Getting tasks...");
+//    	
+//    	List<Task> tasks = smartService.getTasks(taskDirectory);
+//    	logger.info("Found {} tasks", tasks.size());
+//    	
+//    	for(Task task: tasks) {
+//    		logger.info("Running task {}", task.getName());
+//    		smartService.runTask(task);
+//    	}
     	
-    	List<Task> tasks = smartService.getTasks(taskDirectory);
-    	logger.info("Found {} tasks", tasks.size());
-    	
-    	for(Task task: tasks) {
-    		logger.info("Running task {}", task.getName());
-    		smartService.runTask(task);
-    	}
-    	
-    	
+    	logger.info("Creating default directories...");
+    	createDirectories();
     	
     }
+    
+	private void createDirectories() {
+		try {
+			Path databasePath = Paths.get("database/");
+			Files.createDirectories(databasePath);
+			//Path logPath = Paths.get("logs/");
+			//Files.createDirectories(logPath);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
 }

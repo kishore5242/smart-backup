@@ -39,19 +39,23 @@ public class SmartService {
 		}
 	}
 
-	private void runCommand(Command cmd) throws IOException {
-		if (cmd.getOperation().equals("1")) {
-			logger.info(cmd.getComment());
-			fileService.copyAll(cmd.getLhs(), cmd.getRhs());
-			logger.info("Done.");
-		} else if (cmd.getOperation().equals("2")) {
-			logger.info(cmd.getComment());
-			fileService.copyImages(cmd.getLhs(), cmd.getRhs());
-			logger.info("Done.");
-		} else if (cmd.getOperation().equals("#")) {
-			logger.info(cmd.getComment());
-		} else {
-			logger.info("Unknown command! {}", cmd.getComment());
+	public void runCommand(Command cmd) {
+		try {
+			if (cmd.getOperation().equals("1") || cmd.getOperation().equals("all")) {
+				logger.info(cmd.getComment());
+				fileService.copyAll(cmd.getLhs(), cmd.getRhs());
+				logger.info("Done.");
+			} else if (cmd.getOperation().equals("2")) {
+				logger.info(cmd.getComment());
+				fileService.copyImages(cmd.getLhs(), cmd.getRhs());
+				logger.info("Done.");
+			} else if (cmd.getOperation().equals("#")) {
+				logger.info(cmd.getComment());
+			} else {
+				logger.info("Unknown command! {}", cmd.getComment());
+			}
+		} catch (IOException e) {
+			logger.error("Command could not be run ", e);
 		}
 	}
 
@@ -59,27 +63,27 @@ public class SmartService {
 		List<Command> commands = new ArrayList<>();
 		List<String> lines = fileService.getAllLines(taskFile);
 
-		lines.forEach(line -> {
-			commands.add(getCommand(line));
-		});
+//		lines.forEach(line -> {
+//			commands.add(getCommand(line));
+//		});
 		return new Task(taskFile.getName(), commands);
 	}
 
-	private Command getCommand(String line) {
-
-		line = line.trim();
-
-		// check if print command
-		if (line.startsWith("#")) {
-			return new Command(null, "#", null, line);
-		}
-
-		// other command
-		String[] tokens = line.split(">");
-		File lhs = new File(tokens[0].trim());
-		String op = tokens[1].trim();
-		File rhs = new File(tokens[2].trim());
-		return new Command(lhs, op, rhs, line);
-	}
+//	private Command getCommand(String line) {
+//
+//		line = line.trim();
+//
+//		// check if print command
+//		if (line.startsWith("#")) {
+//			return new Command(null, "#", null, line);
+//		}
+//
+//		// other command
+//		String[] tokens = line.split(">");
+//		File lhs = new File(tokens[0].trim());
+//		String op = tokens[1].trim();
+//		File rhs = new File(tokens[2].trim());
+//		return new Command(lhs, op, rhs, line);
+//	}
 
 }

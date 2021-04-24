@@ -1,35 +1,51 @@
 package com.kishore.sb.model;
 
-import java.io.File;
-
 public class Command {
 
-	private final File lhs;
-	private final String operation;
-	private final File rhs;
-	private final String comment;
+	private Integer id;
+	private String lhs;
+	private Operation operation;
+	private String rhs;
+	private String comment;
 
-	public Command(File lhs, String operation, File rhs, String comment) {
-		this.lhs = lhs;
-		this.operation = operation;
-		this.rhs = rhs;
-		this.comment = comment;
+	public Integer getId() {
+		return id;
 	}
 
-	public File getLhs() {
+	public void setId(Integer id) {
+		this.id = id;
+	}
+
+	public String getLhs() {
 		return lhs;
 	}
 
-	public String getOperation() {
+	public void setLhs(String lhs) {
+		this.lhs = lhs;
+	}
+
+	public Operation getOperation() {
 		return operation;
 	}
 
-	public File getRhs() {
+	public void setOperation(Operation operation) {
+		this.operation = operation;
+	}
+
+	public String getRhs() {
 		return rhs;
+	}
+
+	public void setRhs(String rhs) {
+		this.rhs = rhs;
 	}
 
 	public String getComment() {
 		return comment;
+	}
+
+	public void setComment(String comment) {
+		this.comment = comment;
 	}
 
 }

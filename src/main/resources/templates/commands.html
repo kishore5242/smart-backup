@@ -1,0 +1,59 @@
+<!DOCTYPE HTML>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="utf-8">
+<meta name="viewport"
+	content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+<title>SmartBackup</title>
+
+<link rel="stylesheet" th:href="@{/webjars/bootstrap/4.2.1/css/bootstrap.min.css}" />
+<link rel="stylesheet" th:href="@{/css/main.css}" />
+
+</head>
+
+<body>
+
+	<nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top">
+		<a class="navbar-brand" href="#">SmartBackup</a>
+	</nav>
+
+	<main role="main" class="container">
+
+		<table class="table">
+			<thead>
+				<tr>
+					<th scope="col">Source</th>
+					<th scope="col">Operation</th>
+					<th scope="col">Destination</th>
+					<th scope="col"></th>
+					<th scope="col"></th>
+					<th scope="col"></th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr th:each="command: ${getAllCommands}">
+					<td th:text="${command.lhs}" scope="row"></td>
+					<td th:text="${command.operation.name}"></td>
+					<td th:text="${command.rhs}"></td>
+					<td>
+						<a th:href="@{'/cmd/edit/' + ${command.id}}" type="button" class="btn btn-primary">Edit</a>
+					</td>
+					<td>
+						<a th:href="@{'/cmd/delete/' + ${command.id}}" type="button" class="btn btn-danger">Delete</a>
+					</td>
+					<td>
+						<a th:href="@{'/cmd/run/' + ${command.id}}" type="button" class="btn btn-success">Run</a>
+					</td>				
+				</tr>
+			</tbody>
+		</table>
+
+		<a th:href="@{/cmd/new}" type="button" class="btn btn-primary">Create</a>
+		
+	</main>
+	<!-- /.container -->
+
+	<script type="text/javascript" th:src="@{webjars/bootstrap/4.2.1/js/bootstrap.min.js}"></script>
+</body>
+</html>
