@@ -4,15 +4,16 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.EnumUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
 
 import com.kishore.sb.entity.CommandEntity;
 import com.kishore.sb.entity.OperationEntity;
 import com.kishore.sb.model.Command;
+import com.kishore.sb.model.CommandStatus;
 import com.kishore.sb.model.Operation;
 
 @Service
@@ -26,23 +27,9 @@ public class SmartStore {
 	OperationRepository operationRepository;
 
 	public void saveCommand(Command command) {
-
-//		Optional<OperationEntity> operationEntity = operationRepository.findById(command.getOperation().getId());
-//		CommandEntity commandEntity;
-//		if (StringUtils.isEmpty(command.getId())) {
-//			command.setComment("User created command");
-//			commandEntity = toEntity(command, operationEntity.get());
-//		} else {
-//			commandEntity = commandRepository.findById(command.getId()).get();
-//			commandEntity.setComment(command.getComment());
-//			commandEntity.setLhs(command.getLhs());
-//			commandEntity.setRhs(command.getRhs());
-//			commandEntity.setStatus(command.getStatus());
-//		}
-		
 		OperationEntity operationEntity = toEntity(command.getOperation());
 		operationRepository.save(operationEntity);
-		
+
 		CommandEntity commandEntity = toEntity(command, operationEntity);
 		commandRepository.save(commandEntity);
 	}
@@ -77,7 +64,7 @@ public class SmartStore {
 		entity.setOperationEntity(operationEntity);
 		entity.setRhs(command.getRhs());
 		entity.setComment(command.getComment());
-		entity.setStatus(command.getStatus());
+		entity.setStatus(command.getStatus().toString());
 		return entity;
 	}
 
@@ -88,7 +75,7 @@ public class SmartStore {
 		command.setRhs(entity.getRhs());
 		command.setOperation(fromEntity(entity.getOperationEntity()));
 		command.setComment(entity.getComment());
-		command.setStatus(entity.getStatus());
+		command.setStatus(EnumUtils.getEnum(CommandStatus.class, entity.getStatus()));
 		return command;
 	}
 

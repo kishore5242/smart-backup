@@ -7,7 +7,7 @@ public class Command {
 	private Operation operation;
 	private String rhs;
 	private String comment;
-	private String status;
+	private CommandStatus status;
 
 	public Integer getId() {
 		return id;
@@ -49,11 +49,11 @@ public class Command {
 		this.comment = comment;
 	}
 
-	public String getStatus() {
+	public CommandStatus getStatus() {
 		return status;
 	}
 
-	public void setStatus(String status) {
+	public void setStatus(CommandStatus status) {
 		this.status = status;
 	}
 

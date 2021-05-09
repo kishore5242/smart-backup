@@ -10,6 +10,7 @@ import org.springframework.util.CollectionUtils;
 
 import com.kishore.sb.jpa.SmartStore;
 import com.kishore.sb.model.Command;
+import com.kishore.sb.model.CommandStatus;
 
 public class SmartFileFilter implements FileFilter {
 	
@@ -78,7 +79,8 @@ public class SmartFileFilter implements FileFilter {
     	logger.info("copying {}/{}", processedCount, totalCount);
     	int percentage = (processedCount / totalCount ) * 100;
     	if(percentage % 10 == 0) {
-    		cmd.setStatus(processedCount + "/" + totalCount);
+    		cmd.setStatus(CommandStatus.RUNNING);
+    		cmd.setComment(cmd.getOperation().getJobType() + " - " + processedCount + "/" + totalCount);
     		store.saveCommand(cmd);
     	}
 	}

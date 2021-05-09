@@ -25,28 +25,33 @@
 			<thead>
 				<tr>
 					<th scope="col">Name</th>
+					<th scope="col">Operation</th>
 					<th scope="col"></th>
 					<th scope="col"></th>
 					<th scope="col">Status</th>
+					<th scope="col">Comment</th>
 				</tr>
 			</thead>
 			<tbody>
 				<tr th:each="command: ${getAllCommands}">
 					<td th:text="${command.operation.name}"></td>
+					<td th:text="${command.operation.jobType + ' ' + command.operation.fileType}"></td>
 					<td>
 						<a th:href="@{'/cmd/edit/' + ${command.id}}"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></a>
 						<a th:href="@{'/cmd/delete/' + ${command.id}}"><i class="fa fa-trash-o" aria-hidden="true"></i></a>
 					</td>
 					<td th:switch="${command.status}">
-						<a th:case="'created'" th:href="@{'/cmd/run/' + ${command.id}}"><i class="fa fa-play" aria-hidden="true"></i></a>
-						<a th:case="'completed'" th:href="@{'/cmd/run/' + ${command.id}}"><i class="fa fa-repeat" aria-hidden="true"></i></a>
+						<a th:case="${T(com.kishore.sb.model.CommandStatus).CREATED}" th:href="@{'/cmd/run/' + ${command.id}}"><i class="fa fa-play" aria-hidden="true"></i></a>
+						<a th:case="${T(com.kishore.sb.model.CommandStatus).COMPLETED}" th:href="@{'/cmd/run/' + ${command.id}}"><i class="fa fa-repeat" aria-hidden="true"></i></a>
 					</td>
 					<td th:text="${command.status}"></td>
+					<td th:text="${command.comment}"></td>
 				</tr>
 			</tbody>
 		</table>
-
-		<a th:href="@{/cmd/new}" type="button" class="btn btn-primary">Create</a>
+		<br>
+		<br>
+		<a th:href="@{/cmd/new}" type="button" class="btn btn-primary">Create new command</a>
 		
 	</main>
 	<!-- /.container -->

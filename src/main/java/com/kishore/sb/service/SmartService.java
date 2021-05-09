@@ -19,6 +19,7 @@ import org.springframework.stereotype.Component;
 import com.kishore.sb.filter.SmartFileFilter;
 import com.kishore.sb.jpa.SmartStore;
 import com.kishore.sb.model.Command;
+import com.kishore.sb.model.CommandStatus;
 import com.kishore.sb.model.Operation;
 import com.kishore.sb.util.DateUtil;
 
@@ -35,49 +36,52 @@ public class SmartService {
 
 	public void runCommand(Command cmd) {
 		try {
-			
+
 			logger.info("Begin operation - {}", cmd.getOperation().getName());
-			
+
 			Operation op = cmd.getOperation();
-			
-			
+
 			if (op.getJobType().equals(JOB_TYPE_COPY)) {
-				
+
 				SmartFileFilter filter = new SmartFileFilter(store, cmd);
-				
-				if(op.getFileType().equals(FILE_TYPE_IMAGES)) {
+
+				if (op.getFileType().equals(FILE_TYPE_IMAGES)) {
 					filter.setExtentions(EXTENTIONS_IMAGES);
-				} 
-				else if(op.getFileType().equals(FILE_TYPE_VIDEOS)) {
+				} else if (op.getFileType().equals(FILE_TYPE_VIDEOS)) {
 					filter.setExtentions(EXTENTIONS_VIDEOS);
-				} 
-				else if(op.getFileType().equals(FILE_TYPE_DOCUMENTS)) {
+				} else if (op.getFileType().equals(FILE_TYPE_DOCUMENTS)) {
 					filter.setExtentions(EXTENTIONS_DOCUMENTS);
-				} 
-								
+				}
+
 				fileService.copy(cmd.getLhs(), cmd.getRhs(), filter);
-				
+
 			} else if (op.getJobType().equals(JOB_TYPE_MOVE)) {
 				// TODO
-				
+
 			} else if (op.getJobType().equals(JOB_TYPE_BACKUP)) {
 				// TODO
-				
+
 			} else if (op.getJobType().equals(JOB_TYPE_DELETE)) {
 				// TODO
-				
+
 			} else {
-				logger.info("Unknown command! {}", cmd.getComment());
+				logger.info("Unknown job! {}", op.getJobType());
+				cmd.setComment("Unknown job!");
+				cmd.setStatus(CommandStatus.FAILED);
+				return;
 			}
-			
+
+			cmd.setStatus(CommandStatus.COMPLETED);
+			cmd.setComment("Last run - " + DateUtil.timeStamp());
 			logger.info("completed operation - {}", cmd.getOperation().getName());
-			
+
 		} catch (Exception e) {
 			logger.error("Command could not be run ", e);
+			cmd.setComment("Failed " + DateUtil.timeStamp() + " - " + e.getMessage());
+			cmd.setStatus(CommandStatus.FAILED);
 		} finally {
-			cmd.setStatus("Completed " + DateUtil.timeStamp());
 			store.saveCommand(cmd);
 		}
 	}
-	
+
 }

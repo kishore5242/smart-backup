@@ -18,8 +18,9 @@ import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.ModelAndView;
 
 import com.kishore.sb.jpa.SmartStore;
-import com.kishore.sb.model.OperationData;
 import com.kishore.sb.model.Command;
+import com.kishore.sb.model.CommandStatus;
+import com.kishore.sb.model.OperationData;
 import com.kishore.sb.service.SmartService;
 
 @Controller
@@ -61,10 +62,9 @@ public class CommandController {
 
 	@PostMapping("/save")
 	public String saveCommand(@ModelAttribute Command command, Model model) {
-		command.setStatus("created");
-		command.setComment("User created");
+		command.setStatus(CommandStatus.CREATED);
+		command.setComment("Never ran");
 		store.saveCommand(command);
-		//model.addAttribute("getAllCommands", store.getAllCommands());
 		return "redirect:/cmd/";
 	}
 
@@ -74,7 +74,8 @@ public class CommandController {
 		if (command.isPresent()) {
 
 			Command cmd = command.get();
-			cmd.setStatus("started...");
+			cmd.setStatus(CommandStatus.STARTED);
+			cmd.setComment("Preparing to run");
 			store.saveCommand(cmd);
 
 			CompletableFuture.runAsync(() -> smartService.runCommand(cmd));
@@ -91,6 +92,15 @@ public class CommandController {
 		store.deleteCommand(id);
 		model.addAttribute("getAllCommands", store.getAllCommands());
 		return "redirect:/cmd/";
+	}
+	
+	@GetMapping("/edit/{id}")
+	public String editCommand(@PathVariable(name = "id") Integer id, Model model) {
+		Command command = store.getCommand(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Command not found"));
+		model.addAttribute("jobTypes", OperationData.JOB_TYPES);
+		model.addAttribute("fileTypes", OperationData.FILE_TYPES);
+		model.addAttribute("command", command);
+		return "command";
 	}
 
 }
