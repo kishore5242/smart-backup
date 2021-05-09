@@ -2,11 +2,12 @@ package com.kishore.sb.filter;
 
 import java.io.File;
 import java.io.FileFilter;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.util.CollectionUtils;
 
-import com.kishore.sb.controller.CommandController;
 import com.kishore.sb.jpa.SmartStore;
 import com.kishore.sb.model.Command;
 
@@ -14,7 +15,7 @@ public class SmartFileFilter implements FileFilter {
 	
 	private static final Logger logger = LoggerFactory.getLogger(SmartFileFilter.class);
 	
-    private String[] extentions;
+    private Set<String> extentions;
 
     private Integer totalCount;
     
@@ -30,11 +31,12 @@ public class SmartFileFilter implements FileFilter {
 		this.cmd = cmd;
 	}
 
-	public String[] getExtentions() {
+
+	public Set<String> getExtentions() {
 		return extentions;
 	}
 
-	public void setExtentions(String[] extentions) {
+	public void setExtentions(Set<String> extentions) {
 		this.extentions = extentions;
 	}
 
@@ -56,7 +58,7 @@ public class SmartFileFilter implements FileFilter {
 
 	public boolean accept(File file) {
 		
-		if(extentions == null) {
+		if(CollectionUtils.isEmpty(extentions)) {
 			record();
 			return true;
 		}

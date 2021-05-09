@@ -1,12 +1,5 @@
 package com.kishore.sb;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.List;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,7 +10,6 @@ import org.springframework.stereotype.Component;
 
 import com.kishore.sb.jpa.SmartStore;
 import com.kishore.sb.model.Operation;
-import com.kishore.sb.model.Task;
 import com.kishore.sb.service.SmartService;
 
 /**
@@ -36,38 +28,29 @@ public class TasksRunner implements ApplicationRunner {
 	SmartStore store;
 	
     @Override
-    public void run(ApplicationArguments applicationArguments) throws Exception {
+    public void run(ApplicationArguments applicationArguments) throws Exception {    	
+    	//logger.info("loading operations...");
+    	//loadOperations();
     	
-//    	File taskDirectory = new File("tasks");
-//    	logger.info("Getting tasks...");
-//    	
-//    	List<Task> tasks = smartService.getTasks(taskDirectory);
-//    	logger.info("Found {} tasks", tasks.size());
-//    	
-//    	for(Task task: tasks) {
-//    		logger.info("Running task {}", task.getName());
-//    		smartService.runTask(task);
-//    	}
-    	
-    	logger.info("Init data...");
-    	initData();
-    	
+    	//TODO logger.info("checking last run status...");
     }
 	
-	private void initData() {
-		Operation copyOp = new Operation();
-		copyOp.setId(100);
-		copyOp.setName("Copy all");
-		copyOp.setOrganize(false);
-		copyOp.setExtensions("all");
-		
-		Operation copyImgOp = new Operation();
-		copyImgOp.setId(200);
-		copyImgOp.setName("Copy images");
-		copyImgOp.setOrganize(false);
-		copyImgOp.setExtensions("jpg,jpeg,png,gif");
-		
-		store.saveOperation(copyOp);
-		store.saveOperation(copyImgOp);
+	private void loadOperations() {
+//		Operation copyOp = new Operation();
+//		copyOp.setId(100);
+//		copyOp.setName("Copy all");
+//		
+//		Operation copyImgOp = new Operation();
+//		copyImgOp.setId(200);
+//		copyImgOp.setName("Copy images");
+//		
+//		Operation backupDeviceOp = new Operation();
+//		backupDeviceOp.setId(300);
+//		backupDeviceOp.setName("Backup device");
+//		
+//		store.saveOperation(copyOp);
+//		store.saveOperation(copyImgOp);
 	}
+	
+	
 }

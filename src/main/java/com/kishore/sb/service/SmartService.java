@@ -1,22 +1,26 @@
 package com.kishore.sb.service;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import static com.kishore.sb.model.OperationData.EXTENTIONS_DOCUMENTS;
+import static com.kishore.sb.model.OperationData.EXTENTIONS_IMAGES;
+import static com.kishore.sb.model.OperationData.EXTENTIONS_VIDEOS;
+import static com.kishore.sb.model.OperationData.FILE_TYPE_DOCUMENTS;
+import static com.kishore.sb.model.OperationData.FILE_TYPE_IMAGES;
+import static com.kishore.sb.model.OperationData.FILE_TYPE_VIDEOS;
+import static com.kishore.sb.model.OperationData.JOB_TYPE_BACKUP;
+import static com.kishore.sb.model.OperationData.JOB_TYPE_COPY;
+import static com.kishore.sb.model.OperationData.JOB_TYPE_DELETE;
+import static com.kishore.sb.model.OperationData.JOB_TYPE_MOVE;
 
-import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.kishore.sb.TasksRunner;
 import com.kishore.sb.filter.SmartFileFilter;
 import com.kishore.sb.jpa.SmartStore;
 import com.kishore.sb.model.Command;
-import com.kishore.sb.model.Task;
+import com.kishore.sb.model.Operation;
+import com.kishore.sb.util.DateUtil;
 
 @Component
 public class SmartService {
@@ -25,73 +29,55 @@ public class SmartService {
 
 	@Autowired
 	FileService fileService;
-	
+
 	@Autowired
 	SmartStore store;
 
-	public List<Task> getTasks(File taskDirectory) throws IOException {
-		Collection<File> taskFiles = FileUtils.listFiles(taskDirectory, null, false);
-		List<Task> tasks = new ArrayList<>();
-		for (File taskFile : taskFiles) {
-			tasks.add(getTask(taskFile));
-		}
-		return tasks;
-	}
-
-	public void runTask(Task task) throws IOException {
-		for (Command cmd : task.getCommands()) {
-			runCommand(cmd);
-		}
-	}
-
 	public void runCommand(Command cmd) {
 		try {
-			if (cmd.getOperation().getId().equals(100)) {
-				logger.info("Copying all from {} into {}", cmd.getLhs(), cmd.getRhs());
-				fileService.copyAll(cmd.getLhs(), cmd.getRhs(), new SmartFileFilter(store, cmd));
-				logger.info("Done");
-			} else if (cmd.getOperation().getId().equals(200)) {
-				logger.info("Copying images from {} into {}", cmd.getLhs(), cmd.getRhs());
-				fileService.copyImages(cmd.getLhs(), cmd.getRhs(), new SmartFileFilter(store, cmd));
-				logger.info("Done");
-			} else if (cmd.getOperation().equals("#")) {
-				logger.info(cmd.getComment());
+			
+			logger.info("Begin operation - {}", cmd.getOperation().getName());
+			
+			Operation op = cmd.getOperation();
+			
+			
+			if (op.getJobType().equals(JOB_TYPE_COPY)) {
+				
+				SmartFileFilter filter = new SmartFileFilter(store, cmd);
+				
+				if(op.getFileType().equals(FILE_TYPE_IMAGES)) {
+					filter.setExtentions(EXTENTIONS_IMAGES);
+				} 
+				else if(op.getFileType().equals(FILE_TYPE_VIDEOS)) {
+					filter.setExtentions(EXTENTIONS_VIDEOS);
+				} 
+				else if(op.getFileType().equals(FILE_TYPE_DOCUMENTS)) {
+					filter.setExtentions(EXTENTIONS_DOCUMENTS);
+				} 
+								
+				fileService.copy(cmd.getLhs(), cmd.getRhs(), filter);
+				
+			} else if (op.getJobType().equals(JOB_TYPE_MOVE)) {
+				// TODO
+				
+			} else if (op.getJobType().equals(JOB_TYPE_BACKUP)) {
+				// TODO
+				
+			} else if (op.getJobType().equals(JOB_TYPE_DELETE)) {
+				// TODO
+				
 			} else {
 				logger.info("Unknown command! {}", cmd.getComment());
 			}
-		} catch ( Exception e) {
+			
+			logger.info("completed operation - {}", cmd.getOperation().getName());
+			
+		} catch (Exception e) {
 			logger.error("Command could not be run ", e);
 		} finally {
-			cmd.setStatus("completed");
+			cmd.setStatus("Completed " + DateUtil.timeStamp());
 			store.saveCommand(cmd);
 		}
 	}
-
-	private Task getTask(File taskFile) throws IOException {
-		List<Command> commands = new ArrayList<>();
-		List<String> lines = fileService.getAllLines(taskFile);
-
-//		lines.forEach(line -> {
-//			commands.add(getCommand(line));
-//		});
-		return new Task(taskFile.getName(), commands);
-	}
-
-//	private Command getCommand(String line) {
-//
-//		line = line.trim();
-//
-//		// check if print command
-//		if (line.startsWith("#")) {
-//			return new Command(null, "#", null, line);
-//		}
-//
-//		// other command
-//		String[] tokens = line.split(">");
-//		File lhs = new File(tokens[0].trim());
-//		String op = tokens[1].trim();
-//		File rhs = new File(tokens[2].trim());
-//		return new Command(lhs, op, rhs, line);
-//	}
-
+	
 }

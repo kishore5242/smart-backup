@@ -18,55 +18,58 @@ import com.kishore.sb.model.Operation;
 @Service
 @Transactional
 public class SmartStore {
-	
+
 	@Autowired
 	CommandRepository commandRepository;
-	
+
 	@Autowired
 	OperationRepository operationRepository;
-	
-	public void saveCommand(Command command) {
-		
-		Optional<OperationEntity> operationEntity = operationRepository.findById(command.getOperation().getId());
-		CommandEntity commandEntity;
-		if(StringUtils.isEmpty(command.getId())) {
-			command.setComment("User created command");
-			commandEntity = toEntity(command, operationEntity.get());
-		} else {
-			commandEntity = commandRepository.findById(command.getId()).get();
-			commandEntity.setComment(command.getComment());
-			commandEntity.setLhs(command.getLhs());
-			//commandEntity.setOperationEntity(operationEntity.get());
-			commandEntity.setRhs(command.getRhs());
-			commandEntity.setStatus(command.getStatus());
-		}
 
+	public void saveCommand(Command command) {
+
+//		Optional<OperationEntity> operationEntity = operationRepository.findById(command.getOperation().getId());
+//		CommandEntity commandEntity;
+//		if (StringUtils.isEmpty(command.getId())) {
+//			command.setComment("User created command");
+//			commandEntity = toEntity(command, operationEntity.get());
+//		} else {
+//			commandEntity = commandRepository.findById(command.getId()).get();
+//			commandEntity.setComment(command.getComment());
+//			commandEntity.setLhs(command.getLhs());
+//			commandEntity.setRhs(command.getRhs());
+//			commandEntity.setStatus(command.getStatus());
+//		}
+		
+		OperationEntity operationEntity = toEntity(command.getOperation());
+		operationRepository.save(operationEntity);
+		
+		CommandEntity commandEntity = toEntity(command, operationEntity);
 		commandRepository.save(commandEntity);
 	}
-	
+
 	@Transactional(isolation = Isolation.READ_UNCOMMITTED)
 	public List<Command> getAllCommands() {
 		return commandRepository.findAll().stream().map(this::fromEntity).collect(Collectors.toList());
 	}
-	
+
 	public Optional<Command> getCommand(Integer id) {
 		return commandRepository.findById(id).map(this::fromEntity);
 	}
-	
+
 	public void deleteCommand(Integer id) {
 		commandRepository.deleteById(id);
 	}
-	
+
 	@Transactional
 	public List<Operation> getAllOperations() {
 		return operationRepository.findAll().stream().map(this::fromEntity).collect(Collectors.toList());
 	}
-	
+
 	@Transactional
 	public void saveOperation(Operation operation) {
 		operationRepository.save(toEntity(operation));
 	}
-	
+
 	private CommandEntity toEntity(Command command, OperationEntity operationEntity) {
 		CommandEntity entity = new CommandEntity();
 		entity.setId(command.getId());
@@ -77,7 +80,7 @@ public class SmartStore {
 		entity.setStatus(command.getStatus());
 		return entity;
 	}
-	
+
 	private Command fromEntity(CommandEntity entity) {
 		Command command = new Command();
 		command.setId(entity.getId());
@@ -88,22 +91,22 @@ public class SmartStore {
 		command.setStatus(entity.getStatus());
 		return command;
 	}
-	
+
 	private OperationEntity toEntity(Operation operation) {
 		OperationEntity entity = new OperationEntity();
 		entity.setId(operation.getId());
 		entity.setName(operation.getName());
-		entity.setExtensions(operation.getExtensions());
-		entity.setOrganize(operation.isOrganize());
+		entity.setJobType(operation.getJobType());
+		entity.setFileType(operation.getFileType());
 		return entity;
 	}
-	
+
 	private Operation fromEntity(OperationEntity entity) {
 		Operation operation = new Operation();
 		operation.setId(entity.getId());
 		operation.setName(entity.getName());
-		operation.setExtensions(entity.getExtensions());
-		operation.setOrganize(entity.isOrganize());
+		operation.setJobType(entity.getJobType());
+		operation.setFileType(entity.getFileType());
 		return operation;
 	}
 

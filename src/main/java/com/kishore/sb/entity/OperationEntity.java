@@ -10,18 +10,19 @@ import javax.persistence.Table;
 @Entity
 @Table(name = "operation")
 public class OperationEntity {
-	
+
 	@Id
+	@GeneratedValue(strategy = GenerationType.AUTO)
 	private Integer id;
-	
+
 	@Column
 	private String name;
-	
+
 	@Column
-	private String extensions;
-	
+	private String jobType;
+
 	@Column
-	private boolean organize;
+	private String fileType;
 
 	public Integer getId() {
 		return id;
@@ -39,20 +40,20 @@ public class OperationEntity {
 		this.name = name;
 	}
 
-	public String getExtensions() {
-		return extensions;
+	public String getJobType() {
+		return jobType;
 	}
 
-	public void setExtensions(String extensions) {
-		this.extensions = extensions;
+	public void setJobType(String jobType) {
+		this.jobType = jobType;
 	}
 
-	public boolean isOrganize() {
-		return organize;
+	public String getFileType() {
+		return fileType;
 	}
 
-	public void setOrganize(boolean organize) {
-		this.organize = organize;
+	public void setFileType(String fileType) {
+		this.fileType = fileType;
 	}
 
 }

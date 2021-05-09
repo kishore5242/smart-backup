@@ -22,19 +22,24 @@
 
 		<form th:object="${command}" th:action="@{/cmd/save}" method="post">
 			<div class="row">
+				<div class="form-group col-md-12">
+					<input th:field="*{operation.name}" type="text" class="form-control" placeholder="Give a name this command">
+				</div>
+			</div>
+			<div class="row">
 				<div class="form-group col-md-4">
 					<input th:field="*{lhs}" type="text" class="form-control" id="lhs"
 						placeholder="source folder">
 				</div>
 
-				<select class="select-operation" th:field="*{operation.id}">
-				  	<option th:each="operation: ${getAllOperations}" th:text="${operation.name}" th:value="${operation.id}">Action</option>
+				<select class="select-operation col-md-2" th:field="*{operation.jobType}">
+				  	<option th:each="jobType: ${jobTypes}" th:text="${jobType}" th:value="${jobType}">Action</option>
 				</select>
-				<!-- 								
-				<div class="form-group col-md-3">
-					<input th:field="*{operation}" type="text" class="form-control" id="operation" placeholder="extentions of the files to copy"> 
-				</div>
--->
+				
+				<select class="select-operation col-md-2" th:field="*{operation.fileType}">
+				  	<option th:each="fileType: ${fileTypes}" th:text="${fileType}" th:value="${fileType}">Action</option>
+				</select>
+
 				<div class="form-group col-md-4">
 					<input th:field="*{rhs}" type="text" class="form-control" id="rhs"
 						placeholder="destination folder">
@@ -43,7 +48,6 @@
 					<button type="submit" class="btn btn-primary">Save</button>
 				</div>
 			</div>
-
 		</form>
 
 	</main>
