@@ -6,8 +6,6 @@ public class Command {
 	private String lhs;
 	private Operation operation;
 	private String rhs;
-	private String comment;
-	private CommandStatus status;
 
 	public Integer getId() {
 		return id;
@@ -39,22 +37,6 @@ public class Command {
 
 	public void setRhs(String rhs) {
 		this.rhs = rhs;
-	}
-
-	public String getComment() {
-		return comment;
-	}
-
-	public void setComment(String comment) {
-		this.comment = comment;
-	}
-
-	public CommandStatus getStatus() {
-		return status;
-	}
-
-	public void setStatus(CommandStatus status) {
-		this.status = status;
 	}
 
 }

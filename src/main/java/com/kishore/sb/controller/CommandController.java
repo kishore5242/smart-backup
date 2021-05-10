@@ -14,11 +14,14 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.ModelAndView;
 
+import com.kishore.sb.GlobalData;
 import com.kishore.sb.jpa.SmartStore;
 import com.kishore.sb.model.Command;
+import com.kishore.sb.model.CommandInfo;
 import com.kishore.sb.model.CommandStatus;
 import com.kishore.sb.model.OperationData;
 import com.kishore.sb.service.SmartService;
@@ -34,6 +37,9 @@ public class CommandController {
 
 	@Autowired
 	SmartStore store;
+	
+	@Autowired
+	GlobalData data;
 
 	@GetMapping("/")
 	public String getAllCommands(Model model) {
@@ -62,9 +68,8 @@ public class CommandController {
 
 	@PostMapping("/save")
 	public String saveCommand(@ModelAttribute Command command, Model model) {
-		command.setStatus(CommandStatus.CREATED);
-		command.setComment("Never ran");
-		store.saveCommand(command);
+		Integer cmdId = store.saveCommand(command);
+		data.setCommandInfo(cmdId, CommandStatus.CREATED, "Never ran");
 		return "redirect:/cmd/";
 	}
 
@@ -72,13 +77,8 @@ public class CommandController {
 	public String runCommand(@PathVariable(name = "id") Integer id, Model model) {
 		Optional<Command> command = store.getCommand(id);
 		if (command.isPresent()) {
-
-			Command cmd = command.get();
-			cmd.setStatus(CommandStatus.STARTED);
-			cmd.setComment("Preparing to run");
-			store.saveCommand(cmd);
-
-			CompletableFuture.runAsync(() -> smartService.runCommand(cmd));
+			data.setCommandInfo(id, CommandStatus.STARTED, "Preparing to run...");
+			CompletableFuture.runAsync(() -> smartService.runCommand(command.get()));
 		} else {
 			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Command not found");
 		}
@@ -101,6 +101,11 @@ public class CommandController {
 		model.addAttribute("fileTypes", OperationData.FILE_TYPES);
 		model.addAttribute("command", command);
 		return "command";
+	}
+	
+	@GetMapping("/info/{id}")
+	public @ResponseBody CommandInfo getComments(@PathVariable(name = "id") Integer id, Model model) {
+		return data.getCommandInfo(id);
 	}
 
 }

@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import org.apache.commons.lang3.EnumUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
@@ -13,7 +12,6 @@ import org.springframework.transaction.annotation.Transactional;
 import com.kishore.sb.entity.CommandEntity;
 import com.kishore.sb.entity.OperationEntity;
 import com.kishore.sb.model.Command;
-import com.kishore.sb.model.CommandStatus;
 import com.kishore.sb.model.Operation;
 
 @Service
@@ -26,12 +24,12 @@ public class SmartStore {
 	@Autowired
 	OperationRepository operationRepository;
 
-	public void saveCommand(Command command) {
+	public Integer saveCommand(Command command) {
 		OperationEntity operationEntity = toEntity(command.getOperation());
 		operationRepository.save(operationEntity);
 
 		CommandEntity commandEntity = toEntity(command, operationEntity);
-		commandRepository.save(commandEntity);
+		return commandRepository.save(commandEntity).getId();
 	}
 
 	@Transactional(isolation = Isolation.READ_UNCOMMITTED)
@@ -63,8 +61,6 @@ public class SmartStore {
 		entity.setLhs(command.getLhs());
 		entity.setOperationEntity(operationEntity);
 		entity.setRhs(command.getRhs());
-		entity.setComment(command.getComment());
-		entity.setStatus(command.getStatus().toString());
 		return entity;
 	}
 
@@ -74,8 +70,6 @@ public class SmartStore {
 		command.setLhs(entity.getLhs());
 		command.setRhs(entity.getRhs());
 		command.setOperation(fromEntity(entity.getOperationEntity()));
-		command.setComment(entity.getComment());
-		command.setStatus(EnumUtils.getEnum(CommandStatus.class, entity.getStatus()));
 		return command;
 	}
 
