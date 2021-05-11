@@ -74,7 +74,7 @@ public class CommandController {
 	}
 
 	@GetMapping("/run/{id}")
-	public String runCommand(@PathVariable(name = "id") Integer id, Model model) {
+	public @ResponseBody String runCommand(@PathVariable(name = "id") Integer id, Model model) {
 		Optional<Command> command = store.getCommand(id);
 		if (command.isPresent()) {
 			data.setCommandInfo(id, CommandStatus.STARTED, "Preparing to run...");
@@ -82,9 +82,7 @@ public class CommandController {
 		} else {
 			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Command not found");
 		}
-
-		model.addAttribute("getAllCommands", store.getAllCommands());
-		return "redirect:/cmd/";
+		return "submitted";
 	}
 
 	@GetMapping("/delete/{id}")

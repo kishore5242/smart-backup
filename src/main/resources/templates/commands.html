@@ -21,15 +21,14 @@
 
 	<main role="main" class="container">
 
-		<table class="table">
+		<table class="table table-hover">
 			<thead>
 				<tr>
-					<th scope="col">Name</th>
-					<th scope="col">Operation</th>
-					<th scope="col"></th>
-					<th scope="col"></th>
-					<th scope="col">Status</th>
-					<th scope="col">Comment</th>
+					<th scope="col" style="width: 40%">Name</th>
+					<th scope="col" style="width: 10%">Operation</th>
+					<th scope="col" style="width: 10%"></th>
+					<th scope="col" style="width: 10%">Status</th>
+					<th scope="col" style="width: 30%">Comment</th>
 				</tr>
 			</thead>
 			<tbody>
@@ -39,10 +38,11 @@
 					<td>
 						<a th:href="@{'/cmd/edit/' + ${command.id}}"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></a>
 						<a th:href="@{'/cmd/delete/' + ${command.id}}"><i class="fa fa-trash-o" aria-hidden="true"></i></a>
-					</td>
-					<td>
-						<a th:href="@{'/cmd/run/' + ${command.id}}"><i class="fa fa-play runner" aria-hidden="true" style="display:none"></i></a>
-						<a th:href="@{'/cmd/run/' + ${command.id}}"><i class="fa fa-repeat re-runner" aria-hidden="true" style="display:none"></i></a>
+						&nbsp;
+						<a th:href="'javascript:run(\'' + ${command.id} + '\');'">
+							<i class="fa fa-play runner" aria-hidden="true" style="display:none"></i>
+							<i class="fa fa-repeat re-runner" aria-hidden="true" style="display:none"></i>
+						</a>
 					</td>
 					<td><span class="status" th:attr="data-cmd-id=${command.id}"></span></td>
 					<td><span class="comment"></span></td>
@@ -64,44 +64,58 @@
 
 <script type="text/javascript">
 
-window.setInterval(
-	function(){
+
+	window.setInterval(function() {
 		refreshCommandInfo();
-	}, 
-	1000
-);
+	}, 1000);
+
+	
+	function run(id) {
+		$.ajax({
+			url : '/cmd/run/' + id,
+			type : "GET",
+			contentType : "application/json;charset=utf-8",
+			success : function(data) {
+				console.log(data);
+			}
+		});
+	}
 
 
-function refreshCommandInfo() {
-	$(".status").each(function() {
-		var id = $(this).attr('data-cmd-id');
-		var statel = $(this);
-	    $.ajax({
-	        url : '/cmd/info/'+id,
-	        type:"GET",
-	        contentType: "application/json;charset=utf-8",
-	        success : function(data) {
-	        	var status = data["status"];
-	        	statel.text(status);
-	        	statel.closest('.cmd-row').find('.comment').first().text(data["comment"]);
-	        	
-	        	var runner = statel.closest('.cmd-row').find('.runner').first();
-	        	var reRunner = statel.closest('.cmd-row').find('.re-runner').first();
-	        	
-        		runner.hide();
-        		reRunner.hide();
-	        	
-	        	if(status == 'CREATED') {
-	        		runner.show();
-	        	} else if (status == 'COMPLETED') {
-	        		reRunner.show();
-	        	}
-	        }
-	    }); 
-	});
-}
+	function refreshCommandInfo() {
+		$(".status").each(
+				function() {
+					var id = $(this).attr('data-cmd-id');
+					var statel = $(this);
+					$.ajax({
+						url : '/cmd/info/' + id,
+						type : "GET",
+						contentType : "application/json;charset=utf-8",
+						success : function(data) {
+							var status = data["status"];
+							statel.text(status);
+							statel.closest('.cmd-row').find('.comment').first()
+									.text(data["comment"]);
 
+							var runner = statel.closest('.cmd-row').find(
+									'.runner').first();
+							var reRunner = statel.closest('.cmd-row').find(
+									'.re-runner').first();
 
+							runner.hide();
+							reRunner.hide();
+
+							if (status == 'CREATED') {
+								runner.show();
+							} else if (status == 'COMPLETED') {
+								reRunner.show();
+							}
+						}
+					});
+				});
+	}
+	
+	
 </script>
 
 
