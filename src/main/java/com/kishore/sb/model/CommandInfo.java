@@ -5,11 +5,13 @@ public class CommandInfo {
 	private Integer id;
 	private CommandStatus status;
 	private String comment;
+	private StringBuilder console;
 
 	public CommandInfo(Integer id, CommandStatus status, String comment) {
 		this.id = id;
 		this.status = status;
 		this.comment = comment;
+		this.console = new StringBuilder(comment);
 	}
 
 	public Integer getId() {
@@ -34,6 +36,11 @@ public class CommandInfo {
 
 	public void setComment(String comment) {
 		this.comment = comment;
+		this.console.append(System.lineSeparator()).append(comment);
+	}
+	
+	public StringBuilder getConsole() {
+		return console;
 	}
 
 	@Override

@@ -5,3 +5,13 @@ body {
 .select-operation {
 	height: 38px;
 }
+
+.row {
+	margin-bottom: 50px !important;
+}
+
+.console {
+	width: 100%;
+	font-size: 10pt;
+   	font-family: consolas;
+}

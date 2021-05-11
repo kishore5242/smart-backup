@@ -2,6 +2,7 @@ package com.kishore.sb.filter;
 
 import java.io.File;
 import java.io.FileFilter;
+import java.util.HashSet;
 import java.util.Set;
 
 import org.slf4j.Logger;
@@ -16,7 +17,7 @@ public class SmartFileFilter implements FileFilter {
 
 	private static final Logger logger = LoggerFactory.getLogger(SmartFileFilter.class);
 
-	private Set<String> extentions;
+	private Set<String> extentions = new HashSet<>();
 
 	private Integer totalCount;
 
@@ -59,7 +60,9 @@ public class SmartFileFilter implements FileFilter {
 	public boolean accept(File file) {
 
 		if (CollectionUtils.isEmpty(extentions)) {
-			record();
+			if(file.isFile()) {
+				record();
+			}
 			return true;
 		}
 

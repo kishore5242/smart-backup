@@ -1,8 +1,7 @@
 package com.kishore.sb;
 
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.stereotype.Component;
 
@@ -12,21 +11,27 @@ import com.kishore.sb.model.CommandStatus;
 @Component
 public class GlobalData {
 
-	private Set<CommandInfo> info = new HashSet<>();
+	private Map<Integer, CommandInfo> info = new ConcurrentHashMap<>();
 
 	public void setCommandInfo(Integer commandId, CommandStatus status, String comment) {
-		CommandInfo commandInfo = new CommandInfo(commandId, status, comment);
-		this.info.remove(commandInfo);
-		this.info.add(commandInfo);
+		CommandInfo existing = info.putIfAbsent(commandId, new CommandInfo(commandId, status, comment));
+		if(existing != null) {
+			existing.setComment(comment);
+			existing.setStatus(status);
+		}
+	}
+	
+	public void resetCommandInfo(Integer commandId, CommandStatus status, String comment) {
+		info.remove(commandId);
+		info.put(commandId, new CommandInfo(commandId, status, comment));
 	}
 
 	public CommandInfo getCommandInfo(Integer commandId) {
-		Optional<CommandInfo> found = info.stream().filter(i -> i.getId().equals(commandId)).findFirst();
-		if(found.isPresent()) {
-			return found.get();
-		} else {
-			return new CommandInfo(commandId, CommandStatus.CREATED, "Not run");
+		CommandInfo cmdInfo = info.get(commandId);
+		if(cmdInfo == null) {
+			cmdInfo = new CommandInfo(commandId, CommandStatus.NOT_RUN, "Not run");
 		}
+		return cmdInfo;
 	}
 
 }

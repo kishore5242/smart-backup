@@ -1,7 +1,7 @@
 package com.kishore.sb.model;
 
 public enum CommandStatus {
-	CREATED,
+	NOT_RUN,
 	STARTED,
 	RUNNING,
 	COMPLETED,

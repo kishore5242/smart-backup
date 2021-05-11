@@ -69,7 +69,7 @@ public class CommandController {
 	@PostMapping("/save")
 	public String saveCommand(@ModelAttribute Command command, Model model) {
 		Integer cmdId = store.saveCommand(command);
-		data.setCommandInfo(cmdId, CommandStatus.CREATED, "Never ran");
+		data.setCommandInfo(cmdId, CommandStatus.NOT_RUN, "Never ran");
 		return "redirect:/cmd/";
 	}
 
@@ -77,7 +77,7 @@ public class CommandController {
 	public @ResponseBody String runCommand(@PathVariable(name = "id") Integer id, Model model) {
 		Optional<Command> command = store.getCommand(id);
 		if (command.isPresent()) {
-			data.setCommandInfo(id, CommandStatus.STARTED, "Preparing to run...");
+			data.resetCommandInfo(id, CommandStatus.STARTED, "Preparing to run...");
 			CompletableFuture.runAsync(() -> smartService.runCommand(command.get()));
 		} else {
 			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Command not found");

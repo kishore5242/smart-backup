@@ -20,39 +20,46 @@
 	</nav>
 
 	<main role="main" class="container">
-
-		<table class="table table-hover">
-			<thead>
-				<tr>
-					<th scope="col" style="width: 40%">Name</th>
-					<th scope="col" style="width: 10%">Operation</th>
-					<th scope="col" style="width: 10%"></th>
-					<th scope="col" style="width: 10%">Status</th>
-					<th scope="col" style="width: 30%">Comment</th>
-				</tr>
-			</thead>
-			<tbody>
-				<tr th:each="command: ${getAllCommands}" class="cmd-row">
-					<td th:text="${command.operation.name}"></td>
-					<td th:text="${command.operation.jobType + ' ' + command.operation.fileType}"></td>
-					<td>
-						<a th:href="@{'/cmd/edit/' + ${command.id}}"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></a>
-						<a th:href="@{'/cmd/delete/' + ${command.id}}"><i class="fa fa-trash-o" aria-hidden="true"></i></a>
-						&nbsp;
-						<a th:href="'javascript:run(\'' + ${command.id} + '\');'">
-							<i class="fa fa-play runner" aria-hidden="true" style="display:none"></i>
-							<i class="fa fa-repeat re-runner" aria-hidden="true" style="display:none"></i>
-						</a>
-					</td>
-					<td><span class="status" th:attr="data-cmd-id=${command.id}"></span></td>
-					<td><span class="comment"></span></td>
-				</tr>
-			</tbody>
-		</table>
-		<br>
-		<br>
-		<a th:href="@{/cmd/new}" type="button" class="btn btn-primary">Create new command</a>
 		
+		<div th:each="command: ${getAllCommands}" class="row">
+			<div class="col-md cmd-row">
+				<table class="table table-bordered">
+					<tbody>
+						<tr>
+							<td colspan="1">
+								<h4><span th:text="${command.operation.name}"></span></h4>
+							</td>
+							<td colspan="1" width="20%" class="control">
+								<a th:href="@{'/cmd/edit/' + ${command.id}}"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></a>
+								<a th:href="@{'/cmd/delete/' + ${command.id}}"><i class="fa fa-trash-o" aria-hidden="true"></i></a>
+								&nbsp;
+								<a th:href="'javascript:run(\'' + ${command.id} + '\');'">
+									<i class="fa fa-play runner" aria-hidden="true" style="display:none"></i>
+									<i class="fa fa-repeat re-runner" aria-hidden="true" style="display:none"></i>
+								</a><br>
+								<span class="status" th:attr="data-cmd-id=${command.id}"></span><br>
+							</td>
+						</tr>
+						<tr>
+							<td colspan="2">
+								<span th:text="${command.lhs}"></span>
+								<span th:text="'&nbsp;&nbsp;&nbsp;>>>' + ${command.operation.jobType + ' ' + command.operation.fileType} + '>>>&nbsp;&nbsp;&nbsp;'"></span>
+								<span th:text="${command.rhs}"></span>
+							</td>
+						</tr>
+						<tr>
+							<td colspan="2">
+								<textarea class="console" readonly rows="7"></textarea>
+							</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+		</div>
+		<a th:href="@{/cmd/new}" type="button" class="btn btn-primary">Create new command</a>
+		<br>
+		<br>
+		<br>
 	</main>
 	<!-- /.container -->
 
@@ -63,7 +70,6 @@
 
 
 <script type="text/javascript">
-
 
 	window.setInterval(function() {
 		refreshCommandInfo();
@@ -76,7 +82,7 @@
 			type : "GET",
 			contentType : "application/json;charset=utf-8",
 			success : function(data) {
-				console.log(data);
+				$(".control").find("[data-cmd-id='" + id + "']").text('RUNNING');
 			}
 		});
 	}
@@ -87,31 +93,35 @@
 				function() {
 					var id = $(this).attr('data-cmd-id');
 					var statel = $(this);
-					$.ajax({
-						url : '/cmd/info/' + id,
-						type : "GET",
-						contentType : "application/json;charset=utf-8",
-						success : function(data) {
-							var status = data["status"];
-							statel.text(status);
-							statel.closest('.cmd-row').find('.comment').first()
-									.text(data["comment"]);
+					var currStatus = statel.text();
+					if(currStatus != 'COMPLETED' && currStatus != 'NOT_RUN') {
+						$.ajax({
+							url : '/cmd/info/' + id,
+							type : "GET",
+							contentType : "application/json;charset=utf-8",
+							success : function(data) {
+								var status = data["status"];
+								statel.text(status);
+								
+								var psconsole = statel.closest('.cmd-row').find('.console').first();
+								psconsole.text(data["console"]);
+								if(psconsole.length)
+								       psconsole.scrollTop(psconsole[0].scrollHeight - psconsole.height());
 
-							var runner = statel.closest('.cmd-row').find(
-									'.runner').first();
-							var reRunner = statel.closest('.cmd-row').find(
-									'.re-runner').first();
+								var runner = statel.closest('.cmd-row').find('.runner').first();
+								var reRunner = statel.closest('.cmd-row').find('.re-runner').first();
 
-							runner.hide();
-							reRunner.hide();
+								runner.hide();
+								reRunner.hide();
 
-							if (status == 'CREATED') {
-								runner.show();
-							} else if (status == 'COMPLETED') {
-								reRunner.show();
+								if (status == 'NOT_RUN') {
+									runner.show();
+								} else if (status == 'COMPLETED') {
+									reRunner.show();
+								}
 							}
-						}
-					});
+						});
+					}
 				});
 	}
 	
