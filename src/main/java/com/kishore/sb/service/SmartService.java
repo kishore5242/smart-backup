@@ -11,12 +11,20 @@ import static com.kishore.sb.model.OperationData.JOB_TYPE_COPY;
 import static com.kishore.sb.model.OperationData.JOB_TYPE_DELETE;
 import static com.kishore.sb.model.OperationData.JOB_TYPE_MOVE;
 
+import java.io.File;
+
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.filefilter.FileFilterUtils;
+import org.apache.commons.io.filefilter.IOFileFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.kishore.sb.GlobalData;
+import com.kishore.sb.filter.DuplicationFilter;
+import com.kishore.sb.filter.MimeTypeFilter;
+import com.kishore.sb.filter.RecordingFilter;
 import com.kishore.sb.filter.SmartFileFilter;
 import com.kishore.sb.jpa.SmartStore;
 import com.kishore.sb.model.Command;
@@ -64,7 +72,17 @@ public class SmartService {
 				// TODO
 
 			} else if (op.getJobType().equals(JOB_TYPE_BACKUP)) {
-				// TODO
+				
+				File source = new File(command.getLhs());
+				File destination = new File(command.getRhs());
+				
+				MimeTypeFilter mimeFilter = new MimeTypeFilter(true, false, false, false);
+				DuplicationFilter dupFilter = new DuplicationFilter(mimeFilter, destination);
+				IOFileFilter allFilter = FileFilterUtils.and(mimeFilter, dupFilter);
+				
+				RecordingFilter recordingFilter = new RecordingFilter(source, allFilter, command, data);
+
+				FileUtils.copyDirectory(source, destination, recordingFilter, true);	
 
 			} else if (op.getJobType().equals(JOB_TYPE_DELETE)) {
 				// TODO
