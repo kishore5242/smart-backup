@@ -3,7 +3,11 @@ package com.kishore.sb.service;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -29,6 +33,8 @@ import com.kishore.sb.util.DateUtil;
 public class SmartService {
 
 	private static final Logger logger = LoggerFactory.getLogger(SmartService.class);
+	
+	private final Map<Integer, CompletableFuture<String>> runningCommands = new ConcurrentHashMap<>();
 
 	@Autowired
 	SmartStore store;
@@ -36,9 +42,29 @@ public class SmartService {
 	@Autowired
 	GlobalData data;
 	
-	public void runCommand(Command command) {
+	public void run(Command command) {
+		
+		CompletableFuture<String> future = new CompletableFuture<String>();
+		CompletableFuture<String> existing = runningCommands.putIfAbsent(command.getId(), future);
+		if(existing != null) {
+			logger.info("Command {} already running", command.getId());
+			data.setCommandInfo(command.getId(), CommandStatus.RUNNING, "Command already running!");
+		} else {
+			CompletableFuture.runAsync(() -> runSync(command, future));
+		}
+	}
+	
+	public void cancel(Command command) {
+		CompletableFuture<String> existing = runningCommands.get(command.getId());
+		if(existing != null) {
+			logger.info("Cancelling command {} ...", command.getId());
+			existing.cancel(true);
+			runningCommands.remove(command.getId());
+		}
+	}
+	
+	private void runSync(Command command, CompletableFuture<String> future) {
 		try {
-
 			logger.info("Begin operation - {}", command.getOperation().getName());
 			data.setCommandInfo(command.getId(), CommandStatus.RUNNING, "Running...");
 			
@@ -59,25 +85,28 @@ public class SmartService {
 					.filter(duplicateAdvisor::advise)
 					.collect(Collectors.toSet());
 			
-			executeDecisions(command, decisions);
-
-			data.setCommandInfo(command.getId(), CommandStatus.COMPLETED, "Last run - " + DateUtil.timeStamp("dd-MM-yyyy hh:mm a"), 100);
-			logger.info("completed operation - {}", command.getOperation().getName());
+			executeDecisions(command, decisions, future);
 
 		} catch (Exception e) {
 			logger.error("Command could not be run ", e);
 			data.setCommandInfo(command.getId(), CommandStatus.FAILED, "Error " + DateUtil.timeStamp("dd-MM-yyyy hh:mm a") + " - " + e.getMessage());
+			future.completeExceptionally(e);
 		} finally {
 			store.saveCommand(command);
+			runningCommands.remove(command.getId());
 		}
 	}
 	
-	private void executeDecisions(Command command, Set<Decision> decisions) throws IOException {
+	private void executeDecisions(Command command, Set<Decision> decisions, CompletableFuture<String> future) throws IOException {
 		
 		int total = decisions.size();
 		int processed = 0;
 		
 		for(Decision decision: decisions) {
+			
+			if(future.isCancelled()) {
+				break;
+			}
 			
 			if(decision.getAction() == Action.COPY) {
 				FileUtils.copyFile(decision.getSource(), decision.getDestination(), true);
@@ -92,8 +121,20 @@ public class SmartService {
 
 			processed ++;
 			int progress = ( processed * 100 ) / total;
-			data.setCommandInfo(command.getId(), CommandStatus.RUNNING, command.getOperation().getJob() + " - " + processed + "/" + total, progress);
+			String comment = progress + "% - " + decision.getAction() + " - " + decision.getSource().getAbsolutePath() + " ---> " + decision.getDestination();
+			data.setCommandInfo(command.getId(), CommandStatus.RUNNING, comment, progress);
+			logger.info(comment);
 		}
+		
+		String comment = "";
+		if(future.isCancelled()) {
+			comment = "Command cancelled after processing " + processed + " files";
+			data.setCommandInfo(command.getId(), CommandStatus.CANCELLED, comment, 100);
+		} else {
+			comment = "Completed! Last run - " + DateUtil.timeStamp("dd-MM-yyyy hh:mm a");
+			data.setCommandInfo(command.getId(), CommandStatus.COMPLETED, comment, 100);
+		}
+		logger.info(comment);
 	}
 
 }

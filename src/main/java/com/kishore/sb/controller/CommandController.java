@@ -78,12 +78,24 @@ public class CommandController {
 	public @ResponseBody String runCommand(@PathVariable(name = "id") Integer id, Model model) {
 		Optional<Command> command = store.getCommand(id);
 		if (command.isPresent()) {
-			data.resetCommandInfo(id, CommandStatus.STARTED, "Preparing to run...", 0);
-			CompletableFuture.runAsync(() -> smartService.runCommand(command.get()));
+			data.resetCommandInfo(id, CommandStatus.STARTED, "Preparing to run...");
+			smartService.run(command.get());
 		} else {
 			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Command not found");
 		}
 		return "submitted";
+	}
+	
+	@GetMapping("/cancel/{id}")
+	public @ResponseBody String cancelCommand(@PathVariable(name = "id") Integer id, Model model) {
+		Optional<Command> command = store.getCommand(id);
+		if (command.isPresent()) {
+			data.setCommandInfo(id, CommandStatus.CANCELLING, "Cancelling command...");
+			smartService.cancel(command.get());
+		} else {
+			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Command not found");
+		}
+		return "cancelled";
 	}
 
 	@GetMapping("/delete/{id}")

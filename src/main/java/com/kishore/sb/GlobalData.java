@@ -30,9 +30,9 @@ public class GlobalData {
 		}
 	}
 	
-	public void resetCommandInfo(Integer commandId, CommandStatus status, String comment, Integer progress) {
+	public void resetCommandInfo(Integer commandId, CommandStatus status, String comment) {
 		info.remove(commandId);
-		info.put(commandId, new CommandInfo(commandId, status, comment, progress));
+		info.put(commandId, new CommandInfo(commandId, status, comment, 1));
 	}
 
 	public CommandInfo getCommandInfo(Integer commandId) {

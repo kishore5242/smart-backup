@@ -36,8 +36,11 @@
 								<a th:href="@{'/cmd/delete/' + ${command.id}}"><i class="fa fa-trash-o" aria-hidden="true"></i></a>
 								&nbsp;
 								<a th:href="'javascript:run(\'' + ${command.id} + '\');'">
-									<i class="fa fa-play runner" aria-hidden="true" style="display:none"></i>
 									<i class="fa fa-repeat re-runner" aria-hidden="true" style="display:none"></i>
+									<i class="fa fa-play runner" aria-hidden="true" style="display:none"></i>
+								</a>
+								<a th:href="'javascript:cancel(\'' + ${command.id} + '\');'">
+									<i class="fa fa-stop canceller" aria-hidden="true" style="display:none"></i>
 								</a><br>
 								<span class="status" th:attr="data-cmd-id=${command.id}"></span><br>
 							</td>
@@ -83,6 +86,9 @@
 	window.setInterval(function() {
 		refreshCommandInfo();
 	}, 300);
+	window.setInterval(function() {
+		refreshIcons();
+	}, 100);
 
 	
 	function run(id) {
@@ -95,7 +101,43 @@
 			}
 		});
 	}
+	
+	function cancel(id) {
+		$.ajax({
+			url : '/cmd/cancel/' + id,
+			type : "GET",
+			contentType : "application/json;charset=utf-8",
+			success : function(data) {
+				//$(".control").find("[data-cmd-id='" + id + "']").text('CANCELLED');
+			}
+		});
+	}
 
+	function refreshIcons() {
+		$(".status").each(
+			function() {
+				var status = $(this).text();
+				
+				// run icons
+				var runner = $(this).closest('.cmd-row').find('.runner').first();
+				var reRunner = $(this).closest('.cmd-row').find('.re-runner').first();
+				var canceller = $(this).closest('.cmd-row').find('.canceller').first();
+				if (status == 'NOT_RUN') {
+					runner.show();
+					reRunner.hide();
+					canceller.hide();
+				} else if (status == 'COMPLETED' || status == 'CANCELLED') {
+					runner.hide();
+					reRunner.show();
+					canceller.hide();
+				} else if (status == 'RUNNING') {
+					runner.hide();
+					reRunner.hide();
+					canceller.show();
+				}
+			}		
+		);
+	}
 
 	function refreshCommandInfo() {
 		$(".status").each(
@@ -103,38 +145,29 @@
 					var id = $(this).attr('data-cmd-id');
 					var statel = $(this);
 					var currStatus = statel.text();
-					if(currStatus != 'COMPLETED' && currStatus != 'NOT_RUN') {
+					if(currStatus != 'COMPLETED' && currStatus != 'NOT_RUN' && currStatus != 'CANCELLED') {
 						$.ajax({
 							url : '/cmd/info/' + id,
 							type : "GET",
 							contentType : "application/json;charset=utf-8",
 							success : function(data) {
+								
+								// status
 								var status = data["status"];
 								statel.text(status);
 								
+								// console
 								var psconsole = statel.closest('.cmd-row').find('.console').first();
 								psconsole.text(data["console"]);
-								if(psconsole.length)
-								       psconsole.scrollTop(psconsole[0].scrollHeight - psconsole.height());
-								
+								if(psconsole.length) {
+									psconsole.scrollTop(psconsole[0].scrollHeight - psconsole.height());
+								}
+
 								// progress bar
 								var pb = statel.closest('.cmd-row').find('.progress-bar').first();
 								pb.progressbar({
       								value: data["progress"]
     							});
-								
-								// run icons
-								var runner = statel.closest('.cmd-row').find('.runner').first();
-								var reRunner = statel.closest('.cmd-row').find('.re-runner').first();
-
-								runner.hide();
-								reRunner.hide();
-
-								if (status == 'NOT_RUN') {
-									runner.show();
-								} else if (status == 'COMPLETED') {
-									reRunner.show();
-								}
 							}
 						});
 					}
