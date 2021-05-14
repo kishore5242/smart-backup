@@ -19,10 +19,13 @@ public class OperationEntity {
 	private String name;
 
 	@Column
-	private String jobType;
+	private String job;
 
 	@Column
-	private String fileType;
+	private String categories;
+	
+	@Column
+	private boolean avoidDuplication;
 
 	public Integer getId() {
 		return id;
@@ -40,20 +43,28 @@ public class OperationEntity {
 		this.name = name;
 	}
 
-	public String getJobType() {
-		return jobType;
+	public String getJob() {
+		return job;
 	}
 
-	public void setJobType(String jobType) {
-		this.jobType = jobType;
+	public void setJob(String job) {
+		this.job = job;
 	}
 
-	public String getFileType() {
-		return fileType;
+	public String getCategories() {
+		return categories;
 	}
 
-	public void setFileType(String fileType) {
-		this.fileType = fileType;
+	public void setCategories(String categories) {
+		this.categories = categories;
+	}
+
+	public boolean getAvoidDuplication() {
+		return avoidDuplication;
+	}
+
+	public void setAvoidDuplication(boolean avoidDuplication) {
+		this.avoidDuplication = avoidDuplication;
 	}
 
 }

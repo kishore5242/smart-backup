@@ -1,44 +1,34 @@
 package com.kishore.sb.service;
 
-import static com.kishore.sb.model.OperationData.EXTENTIONS_DOCUMENTS;
-import static com.kishore.sb.model.OperationData.EXTENTIONS_IMAGES;
-import static com.kishore.sb.model.OperationData.EXTENTIONS_VIDEOS;
-import static com.kishore.sb.model.OperationData.FILE_TYPE_DOCUMENTS;
-import static com.kishore.sb.model.OperationData.FILE_TYPE_IMAGES;
-import static com.kishore.sb.model.OperationData.FILE_TYPE_VIDEOS;
-import static com.kishore.sb.model.OperationData.JOB_TYPE_BACKUP;
-import static com.kishore.sb.model.OperationData.JOB_TYPE_COPY;
-import static com.kishore.sb.model.OperationData.JOB_TYPE_DELETE;
-import static com.kishore.sb.model.OperationData.JOB_TYPE_MOVE;
-
 import java.io.File;
+import java.io.IOException;
+import java.util.Collection;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.filefilter.FileFilterUtils;
-import org.apache.commons.io.filefilter.IOFileFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.kishore.sb.GlobalData;
-import com.kishore.sb.filter.DuplicationFilter;
-import com.kishore.sb.filter.MimeTypeFilter;
-import com.kishore.sb.filter.RecordingFilter;
-import com.kishore.sb.filter.SmartFileFilter;
+import com.kishore.sb.advice.ActionAdvisor;
+import com.kishore.sb.advice.DestinationAdvisor;
+import com.kishore.sb.advice.DuplicateAdvisor;
+import com.kishore.sb.advice.MimeTypeAdvisor;
 import com.kishore.sb.jpa.SmartStore;
+import com.kishore.sb.model.Action;
 import com.kishore.sb.model.Command;
 import com.kishore.sb.model.CommandStatus;
-import com.kishore.sb.model.Operation;
+import com.kishore.sb.model.Decision;
 import com.kishore.sb.util.DateUtil;
 
 @Component
 public class SmartService {
 
 	private static final Logger logger = LoggerFactory.getLogger(SmartService.class);
-
-	@Autowired
-	FileService fileService;
 
 	@Autowired
 	SmartStore store;
@@ -51,56 +41,58 @@ public class SmartService {
 
 			logger.info("Begin operation - {}", command.getOperation().getName());
 			data.setCommandInfo(command.getId(), CommandStatus.RUNNING, "Running...");
+			
+			File source = new File(command.getLhs());
+			
+			Collection<File> sourceFiles = FileUtils.listFiles(source, null, true);
+			Stream<Decision> decisionStream = sourceFiles.stream().map(Decision::new);
+			
+			ActionAdvisor actionAdvisor = new ActionAdvisor(command);
+			MimeTypeAdvisor mimeTypeAdvisor = new MimeTypeAdvisor(command);
+			DestinationAdvisor destinationAdvisor = new DestinationAdvisor(command);
+			DuplicateAdvisor duplicateAdvisor = new DuplicateAdvisor(command);
+			
+			Set<Decision> decisions = decisionStream
+					.filter(actionAdvisor::advise)
+					.filter(mimeTypeAdvisor::advise)
+					.filter(destinationAdvisor::advise)
+					.filter(duplicateAdvisor::advise)
+					.collect(Collectors.toSet());
+			
+			executeDecisions(command, decisions);
 
-			Operation op = command.getOperation();
-
-			if (op.getJobType().equals(JOB_TYPE_COPY)) {
-
-				SmartFileFilter filter = new SmartFileFilter(command, data);
-
-				if (op.getFileType().equals(FILE_TYPE_IMAGES)) {
-					filter.setExtentions(EXTENTIONS_IMAGES);
-				} else if (op.getFileType().equals(FILE_TYPE_VIDEOS)) {
-					filter.setExtentions(EXTENTIONS_VIDEOS);
-				} else if (op.getFileType().equals(FILE_TYPE_DOCUMENTS)) {
-					filter.setExtentions(EXTENTIONS_DOCUMENTS);
-				}
-
-				fileService.copy(command.getLhs(), command.getRhs(), filter);
-
-			} else if (op.getJobType().equals(JOB_TYPE_MOVE)) {
-				// TODO
-
-			} else if (op.getJobType().equals(JOB_TYPE_BACKUP)) {
-				
-				File source = new File(command.getLhs());
-				File destination = new File(command.getRhs());
-				
-				MimeTypeFilter mimeFilter = new MimeTypeFilter(true, false, false, false);
-				DuplicationFilter dupFilter = new DuplicationFilter(mimeFilter, destination);
-				IOFileFilter allFilter = FileFilterUtils.and(mimeFilter, dupFilter);
-				
-				RecordingFilter recordingFilter = new RecordingFilter(source, allFilter, command, data);
-
-				FileUtils.copyDirectory(source, destination, recordingFilter, true);	
-
-			} else if (op.getJobType().equals(JOB_TYPE_DELETE)) {
-				// TODO
-
-			} else {
-				logger.info("Unknown job! {}", op.getJobType());
-				data.setCommandInfo(command.getId(), CommandStatus.FAILED, "Unknown job!");
-				return;
-			}
-
-			data.setCommandInfo(command.getId(), CommandStatus.COMPLETED, "Last run - " + DateUtil.timeStamp());
+			data.setCommandInfo(command.getId(), CommandStatus.COMPLETED, "Last run - " + DateUtil.timeStamp("dd-MM-yyyy hh:mm a"), 100);
 			logger.info("completed operation - {}", command.getOperation().getName());
 
 		} catch (Exception e) {
 			logger.error("Command could not be run ", e);
-			data.setCommandInfo(command.getId(), CommandStatus.FAILED, "Error " + DateUtil.timeStamp() + " - " + e.getMessage());
+			data.setCommandInfo(command.getId(), CommandStatus.FAILED, "Error " + DateUtil.timeStamp("dd-MM-yyyy hh:mm a") + " - " + e.getMessage());
 		} finally {
 			store.saveCommand(command);
+		}
+	}
+	
+	private void executeDecisions(Command command, Set<Decision> decisions) throws IOException {
+		
+		int total = decisions.size();
+		int processed = 0;
+		
+		for(Decision decision: decisions) {
+			
+			if(decision.getAction() == Action.COPY) {
+				FileUtils.copyFile(decision.getSource(), decision.getDestination(), true);
+				
+			} else if(decision.getAction() == Action.MOVE) {
+				FileUtils.copyFile(decision.getSource(), decision.getDestination(), true);
+				FileUtils.forceDelete(decision.getSource());
+				
+			} else if(decision.getAction() == Action.DELETE) {
+				FileUtils.forceDelete(decision.getSource());
+			}
+
+			processed ++;
+			int progress = ( processed * 100 ) / total;
+			data.setCommandInfo(command.getId(), CommandStatus.RUNNING, command.getOperation().getJob() + " - " + processed + "/" + total, progress);
 		}
 	}
 

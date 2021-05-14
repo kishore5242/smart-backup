@@ -1,11 +1,14 @@
 package com.kishore.sb.model;
 
+import java.util.Set;
+
 public class Operation {
 
 	private Integer id;
 	private String name;
-	private String jobType;
-	private String fileType;
+	private Job job;
+	private Set<Category> categories;
+	private boolean avoidDuplication;
 
 	public Integer getId() {
 		return id;
@@ -23,20 +26,28 @@ public class Operation {
 		this.name = name;
 	}
 
-	public String getJobType() {
-		return jobType;
+	public Job getJob() {
+		return job;
 	}
 
-	public void setJobType(String jobType) {
-		this.jobType = jobType;
+	public void setJob(Job job) {
+		this.job = job;
 	}
 
-	public String getFileType() {
-		return fileType;
+	public Set<Category> getCategories() {
+		return categories;
 	}
 
-	public void setFileType(String fileType) {
-		this.fileType = fileType;
+	public void setCategories(Set<Category> categories) {
+		this.categories = categories;
+	}
+
+	public boolean getAvoidDuplication() {
+		return avoidDuplication;
+	}
+
+	public void setAvoidDuplication(boolean avoidDuplication) {
+		this.avoidDuplication = avoidDuplication;
 	}
 
 }

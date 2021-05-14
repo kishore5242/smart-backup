@@ -30,24 +30,39 @@
 				<div class="form-group" hidden="true">
 					<input th:field="*{id}" type="text" class="form-control" id="id">
 				</div>
-				<div class="form-group col-md-4">
+				<div class="form-group col-md-5">
 					<input th:field="*{lhs}" type="text" class="form-control" id="lhs"
 						placeholder="source folder">
 				</div>
 
-				<select class="select-operation col-md-2" th:field="*{operation.jobType}">
-				  	<option th:each="jobType: ${jobTypes}" th:text="${jobType}" th:value="${jobType}">Action</option>
-				</select>
-				
-				<select class="select-operation col-md-2" th:field="*{operation.fileType}">
-				  	<option th:each="fileType: ${fileTypes}" th:text="${fileType}" th:value="${fileType}">Action</option>
-				</select>
-
-				<div class="form-group col-md-4">
-					<input th:field="*{rhs}" type="text" class="form-control" id="rhs"
-						placeholder="destination folder">
+				<div class="col-md-2">
+					<select class="select-operation" th:field="*{operation.job}">
+					  	<option th:each="job: ${jobs}" th:text="${job}" th:value="${job}">Action</option>
+					</select>
+					<br>
+					<div class="form-group form-check">
+			            <div class="checkbox-group" th:each="category: ${categories}">
+			                    <input type="checkbox" id="categories" name="categories" class="form-check-input" 
+			                    	th:text="${category}" 
+			                    	th:field="*{operation.categories}" 
+			                    	th:value="${category}">
+			            </div>
+		            </div>
+		            <div class="form-group form-check">
+		                    <input type="checkbox" id="categories" name="categories" class="form-check-input" 
+		                    	th:text="'Avoid duplication'" 
+		                    	th:field="*{operation.avoidDuplication}"
+		                    	th:value="${command.operation.avoidDuplication}">
+		            </div>
 				</div>
-				<div class="col-md-1">
+
+
+				
+				<div class="form-group col-md-5">
+					<input th:field="*{rhs}" type="text" class="form-control" id="rhs" placeholder="destination folder">
+				</div>			
+
+				<div class="col-md-2">
 					<button type="submit" class="btn btn-primary">Save</button>
 				</div>
 			</div>

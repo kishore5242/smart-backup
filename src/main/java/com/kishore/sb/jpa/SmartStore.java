@@ -1,7 +1,9 @@
 package com.kishore.sb.jpa;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,7 +13,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.kishore.sb.entity.CommandEntity;
 import com.kishore.sb.entity.OperationEntity;
+import com.kishore.sb.model.Category;
 import com.kishore.sb.model.Command;
+import com.kishore.sb.model.Job;
 import com.kishore.sb.model.Operation;
 
 @Service
@@ -77,8 +81,10 @@ public class SmartStore {
 		OperationEntity entity = new OperationEntity();
 		entity.setId(operation.getId());
 		entity.setName(operation.getName());
-		entity.setJobType(operation.getJobType());
-		entity.setFileType(operation.getFileType());
+		entity.setJob(operation.getJob().toString());
+		entity.setCategories(String.join(",",
+				operation.getCategories().stream().map(Category::toString).collect(Collectors.toSet())));
+		entity.setAvoidDuplication(operation.getAvoidDuplication());
 		return entity;
 	}
 
@@ -86,8 +92,15 @@ public class SmartStore {
 		Operation operation = new Operation();
 		operation.setId(entity.getId());
 		operation.setName(entity.getName());
-		operation.setJobType(entity.getJobType());
-		operation.setFileType(entity.getFileType());
+		operation.setJob(Job.valueOf(entity.getJob()));
+		
+		Set<Category> categories = new HashSet<>();
+		String[] catArray = entity.getCategories().split(",");
+		for(String category: catArray) {
+			categories.add(Category.valueOf(category));
+		}
+		operation.setCategories(categories);
+		operation.setAvoidDuplication(entity.getAvoidDuplication());
 		return operation;
 	}
 

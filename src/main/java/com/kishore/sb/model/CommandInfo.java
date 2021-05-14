@@ -6,12 +6,14 @@ public class CommandInfo {
 	private CommandStatus status;
 	private String comment;
 	private StringBuilder console;
+	private Integer progress;
 
-	public CommandInfo(Integer id, CommandStatus status, String comment) {
+	public CommandInfo(Integer id, CommandStatus status, String comment, Integer progress) {
 		this.id = id;
 		this.status = status;
 		this.comment = comment;
 		this.console = new StringBuilder(comment);
+		this.progress = progress;
 	}
 
 	public Integer getId() {
@@ -39,6 +41,14 @@ public class CommandInfo {
 		this.console.append(System.lineSeparator()).append(comment);
 	}
 	
+	public Integer getProgress() {
+		return progress;
+	}
+
+	public void setProgress(Integer progress) {
+		this.progress = progress;
+	}
+
 	public StringBuilder getConsole() {
 		return console;
 	}

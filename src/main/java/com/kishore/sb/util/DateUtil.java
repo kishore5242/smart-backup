@@ -7,8 +7,9 @@ public final class DateUtil {
 	
 	private DateUtil() {}
 	
-	public static String timeStamp() {
-	    SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyy hh:mm a");  
+	public static String timeStamp(String format) {
+		//"dd-MM-yyyy hh:mm a"
+	    SimpleDateFormat formatter = new SimpleDateFormat(format);  
 	    Date date = new Date();  
 	    return formatter.format(date);  
 	}
