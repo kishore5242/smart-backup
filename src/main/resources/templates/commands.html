@@ -23,7 +23,7 @@
 
 	<main role="main" class="container">
 		
-		<div th:each="command: ${getAllCommands}" class="row">
+		<div th:each="command: ${getAllCommands}" class="row command-row">
 			<div class="col-md cmd-row">
 				<table class="table table-dark command-table">
 					<tbody>
@@ -67,7 +67,11 @@
 				</table>
 			</div>
 		</div>
-		<a th:href="@{/cmd/new}" type="button" class="btn btn-primary">Create new command</a>
+		<div class="row">
+			<div class="col text-center">
+				<a th:href="@{/cmd/new}" type="button" class="btn btn-primary">Create new command</a>
+			</div>
+		</div>
 		<br>
 		<br>
 		<br>

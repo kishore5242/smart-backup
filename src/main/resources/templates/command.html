@@ -2,13 +2,15 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
 <meta charset="utf-8">
-<meta name="viewport"
-	content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
 <title>SmartBackup</title>
 
 <link rel="stylesheet" th:href="@{/webjars/bootstrap/4.2.1/css/bootstrap.min.css}" />
 <link rel="stylesheet" th:href="@{/css/main.css}" />
+<link rel="stylesheet" th:href="@{/font-awesome/css/font-awesome.min.css}" />
+<link rel="stylesheet" th:href="@{/css/jquery-ui.css}" />
+<link rel="stylesheet" th:href="@{/css/jquery-ui.theme.css}" />
 
 </head>
 
@@ -19,27 +21,38 @@
 	</nav>
 
 	<main role="main" class="container">
+	
+		<div class="row">
+			<div class="col-md-12 text-center">
+				<select id="job-selector">
+				  	<option th:each="job: ${jobs}" th:text="${job}" th:value="${job}">Select</option>
+				</select>
+			</div>
+		</div>
+		<br>
+		<br>
 
-		<form th:object="${command}" th:action="@{/cmd/save}" method="post">
+		<!-- COPY -->
+		<form id="copy-form" class="job-form" th:object="${command}" th:action="@{/cmd/save}" method="post" style="display:none">
+		
+			<input th:field="*{operation.job}" type="hidden" th:value="'COPY'">
+		
 			<div class="row">
 				<div class="form-group col-md-12">
-					<input th:field="*{operation.name}" type="text" class="form-control" placeholder="Give a name this command">
+					<input th:field="*{operation.name}" type="text" class="form-control" placeholder="Describe this copy command">
 				</div>
 			</div>
 			<div class="row">
+			
 				<div class="form-group" hidden="true">
 					<input th:field="*{id}" type="text" class="form-control" id="id">
 				</div>
+				
 				<div class="form-group col-md-5">
-					<input th:field="*{lhs}" type="text" class="form-control" id="lhs"
-						placeholder="source folder">
+					<input th:field="*{lhs}" type="text" class="form-control" id="lhs" placeholder="Folder from which files need to be copied">
 				</div>
 
 				<div class="col-md-2">
-					<select class="select-operation" th:field="*{operation.job}">
-					  	<option th:each="job: ${jobs}" th:text="${job}" th:value="${job}">Action</option>
-					</select>
-					<br>
 					<div class="form-group form-check">
 			            <div class="checkbox-group" th:each="category: ${categories}">
 			                    <input type="checkbox" id="categories" name="categories" class="form-check-input" 
@@ -55,22 +68,253 @@
 		                    	th:value="${command.operation.avoidDuplication}">
 		            </div>
 				</div>
-
-
 				
 				<div class="form-group col-md-5">
-					<input th:field="*{rhs}" type="text" class="form-control" id="rhs" placeholder="destination folder">
-				</div>			
+					<input th:field="*{rhs}" type="text" class="form-control" id="rhs" placeholder="Folder where copied files need to be pasted">
+				</div>
+						
+			</div>
+			<br><br><br><br><br><br>
+			<div class="row">
+				<div class="col-md-12 text-center">
+					<button type="submit" class="btn btn-primary">Save</button>
+				</div>
+			</div>
+			
+		</form>
+		
+		
+		<!-- MOVE -->
+		<form id="move-form" class="job-form" th:object="${command}" th:action="@{/cmd/save}" method="post" style="display:none">
+		
+			<input th:field="*{operation.job}" type="hidden" th:value="'MOVE'">
+		
+			<div class="row">
+				<div class="form-group col-md-12">
+					<input th:field="*{operation.name}" type="text" class="form-control" placeholder="Describe this move command">
+				</div>
+			</div>
+			<div class="row">
+			
+				<div class="form-group" hidden="true">
+					<input th:field="*{id}" type="text" class="form-control" id="id">
+				</div>
+				
+				<div class="form-group col-md-5">
+					<input th:field="*{lhs}" type="text" class="form-control" id="lhs" placeholder="Folder from which files need to be moved">
+				</div>
 
 				<div class="col-md-2">
+					<div class="form-group form-check">
+			            <div class="checkbox-group" th:each="category: ${categories}">
+			                    <input type="checkbox" id="categories" name="categories" class="form-check-input" 
+			                    	th:text="${category}" 
+			                    	th:field="*{operation.categories}" 
+			                    	th:value="${category}">
+			            </div>
+		            </div>
+		            <div class="form-group form-check">
+		                    <input type="checkbox" id="categories" name="categories" class="form-check-input" 
+		                    	th:text="'Avoid duplication'" 
+		                    	th:field="*{operation.avoidDuplication}"
+		                    	th:value="${command.operation.avoidDuplication}">
+		            </div>
+				</div>
+				
+				<div class="form-group col-md-5">
+					<input th:field="*{rhs}" type="text" class="form-control" id="rhs" placeholder="Folder to where files need to be moved">
+				</div>			
+			</div>
+			<br><br><br><br><br><br>
+			<div class="row">
+				<div class="col-md-12 text-center">
+					<button type="submit" class="btn btn-primary">Save</button>
+				</div>
+			</div>
+		</form>
+		
+		
+		<!-- DELETE -->
+		<form id="delete-form" class="job-form" th:object="${command}" th:action="@{/cmd/save}" method="post" style="display:none">
+		
+			<input th:field="*{operation.job}" type="hidden" th:value="'DELETE'">
+		
+			<div class="row">
+				<div class="form-group col-md-12">
+					<input th:field="*{operation.name}" type="text" class="form-control" placeholder="Describe the delete command">
+				</div>
+			</div>
+			<div class="row">
+			
+				<div class="form-group" hidden="true">
+					<input th:field="*{id}" type="text" class="form-control" id="id">
+				</div>
+				
+				<div class="form-group col-md-5">
+					<input th:field="*{lhs}" type="text" class="form-control" id="lhs" placeholder="Folder where files need to be deleted">
+				</div>
+
+				<div class="col-md-2">
+					<div class="form-group form-check">
+			            <div class="checkbox-group" th:each="category: ${categories}">
+			                    <input type="checkbox" id="categories" name="categories" class="form-check-input" 
+			                    	th:text="${category}" 
+			                    	th:field="*{operation.categories}" 
+			                    	th:value="${category}">
+			            </div>
+		            </div>
+				</div>		
+			</div>
+			<br><br><br><br><br><br>
+			<div class="row">
+				<div class="col-md-12 text-center">
 					<button type="submit" class="btn btn-primary">Save</button>
 				</div>
 			</div>
 		</form>
 
+		<!-- BACKUP_COPY -->
+		<form id="backup-copy-form" class="job-form" th:object="${command}" th:action="@{/cmd/save}" method="post" style="display:none">
+		
+			<input th:field="*{operation.job}" type="hidden" th:value="'COPY'">
+		
+			<div class="row">
+				<div class="form-group col-md-12">
+					<input th:field="*{operation.name}" type="text" class="form-control" placeholder="Describe this backup-copy command">
+				</div>
+			</div>
+			<div class="row">
+			
+				<div class="form-group" hidden="true">
+					<input th:field="*{id}" type="text" class="form-control" id="id">
+				</div>
+				
+				<div class="form-group col-md-5">
+					<input th:field="*{lhs}" type="text" class="form-control" id="lhs" placeholder="Folder from which files to be taken as backup">
+				</div>
+
+				<div class="col-md-2">
+					<div class="form-group form-check">
+			            <div class="checkbox-group" th:each="category: ${categories}">
+			                    <input type="checkbox" id="categories" name="categories" class="form-check-input" 
+			                    	th:text="${category}" 
+			                    	th:field="*{operation.categories}" 
+			                    	th:value="${category}">
+			            </div>
+		            </div>
+		            <div class="form-group form-check">
+		                    <input type="checkbox" id="categories" name="categories" class="form-check-input" 
+		                    	th:text="'Avoid duplication'" 
+		                    	th:field="*{operation.avoidDuplication}"
+		                    	th:value="${command.operation.avoidDuplication}">
+		            </div>
+				</div>
+				
+				<div class="form-group col-md-5">
+					<input th:field="*{rhs}" type="text" class="form-control" id="rhs" placeholder="Backup folder">
+				</div>
+						
+			</div>
+			<br><br><br><br><br><br>
+			<div class="row">
+				<div class="col-md-12 text-center">
+					<button type="submit" class="btn btn-primary">Save</button>
+				</div>
+			</div>
+			
+		</form>
+		
+		<!-- BACKUP_MOVE -->
+		<form id="backup-move-form" class="job-form" th:object="${command}" th:action="@{/cmd/save}" method="post" style="display:none">
+		
+			<input th:field="*{operation.job}" type="hidden" th:value="'COPY'">
+		
+			<div class="row">
+				<div class="form-group col-md-12">
+					<input th:field="*{operation.name}" type="text" class="form-control" placeholder="Describe this backup-move command">
+				</div>
+			</div>
+			<div class="row">
+			
+				<div class="form-group" hidden="true">
+					<input th:field="*{id}" type="text" class="form-control" id="id">
+				</div>
+				
+				<div class="form-group col-md-5">
+					<input th:field="*{lhs}" type="text" class="form-control" id="lhs" placeholder="Folder from which files to be taken as backup">
+				</div>
+
+				<div class="col-md-2">
+					<div class="form-group form-check">
+			            <div class="checkbox-group" th:each="category: ${categories}">
+			                    <input type="checkbox" id="categories" name="categories" class="form-check-input" 
+			                    	th:text="${category}" 
+			                    	th:field="*{operation.categories}" 
+			                    	th:value="${category}">
+			            </div>
+		            </div>
+		            <div class="form-group form-check">
+		                    <input type="checkbox" id="categories" name="categories" class="form-check-input" 
+		                    	th:text="'Avoid duplication'" 
+		                    	th:field="*{operation.avoidDuplication}"
+		                    	th:value="${command.operation.avoidDuplication}">
+		            </div>
+				</div>
+				
+				<div class="form-group col-md-5">
+					<input th:field="*{rhs}" type="text" class="form-control" id="rhs" placeholder="Backup folder">
+				</div>
+						
+			</div>
+			<br><br><br><br><br><br>
+			<div class="row">
+				<div class="col-md-12 text-center">
+					<button type="submit" class="btn btn-primary">Save</button>
+				</div>
+			</div>
+			
+		</form>
+
 	</main>
-	<!-- /.container -->
-	<script type="text/javascript" th:src="@{/webjars/bootstrap/4.2.1/js/bootstrap.min.js}"></script>
+	
+	<script type="text/javascript" th:src="@{webjars/bootstrap/4.2.1/js/bootstrap.min.js}"></script>
+	<script type="text/javascript" th:src="@{/js/jquery.js}"></script>
+	<script type="text/javascript" th:src="@{/js/jquery-ui.js}"></script>
 
 </body>
+
+<script type="text/javascript">
+
+$( document ).ready(function() {
+	$('#job-selector').val('COPY').change();
+});
+
+$('#job-selector').on('change', function (e) {
+    var optionSelected = $("option:selected", this);
+    var v = this.value;
+    $(".job-form").hide();
+    
+	if(v == 'COPY') {
+		$('#copy-form').show();
+		
+	} else if(v == 'MOVE') {
+		$('#move-form').show();
+		
+	} else if (v == 'DELETE') {
+		$('#delete-form').show();
+		
+	} else if (v == 'BACKUP_COPY') {
+		$('#backup-copy-form').show();
+		
+	} else if (v == 'BACKUP_MOVE') {
+		$('#backup-move-form').show();
+	} 	
+	
+});
+
+
+
+</script>
+
+
 </html>

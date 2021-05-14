@@ -4,7 +4,7 @@ body {
 }
 
 .navbar {
-	background-color: #31441a;
+	background-color: #232b26 !important;
 }
 
 .select-operation {
@@ -12,7 +12,7 @@ body {
 	width: 100%;
 }
 
-.row {
+.command-row {
 	margin-bottom: 50px !important;
 }
 
@@ -45,4 +45,10 @@ textarea::-webkit-scrollbar-thumb {
 
 .command-table {
 	border-radius: 10px;
+}
+
+.job-form {
+	background-color: gray;
+	padding: 20px;
+	border-radius: 20px;
 }
