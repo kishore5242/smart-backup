@@ -26,6 +26,9 @@ public class OperationEntity {
 	
 	@Column
 	private boolean avoidDuplication;
+	
+	@Column
+	private boolean deleteFromSource;
 
 	public Integer getId() {
 		return id;
@@ -65,6 +68,14 @@ public class OperationEntity {
 
 	public void setAvoidDuplication(boolean avoidDuplication) {
 		this.avoidDuplication = avoidDuplication;
+	}
+
+	public boolean getDeleteFromSource() {
+		return deleteFromSource;
+	}
+
+	public void setDeleteFromSource(boolean deleteFromSource) {
+		this.deleteFromSource = deleteFromSource;
 	}
 
 }

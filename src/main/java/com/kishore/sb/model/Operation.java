@@ -9,6 +9,7 @@ public class Operation {
 	private Job job;
 	private Set<Category> categories;
 	private boolean avoidDuplication;
+	private boolean deleteFromSource;
 
 	public Integer getId() {
 		return id;
@@ -48,6 +49,14 @@ public class Operation {
 
 	public void setAvoidDuplication(boolean avoidDuplication) {
 		this.avoidDuplication = avoidDuplication;
+	}
+
+	public boolean getDeleteFromSource() {
+		return deleteFromSource;
+	}
+
+	public void setDeleteFromSource(boolean deleteFromSource) {
+		this.deleteFromSource = deleteFromSource;
 	}
 
 }

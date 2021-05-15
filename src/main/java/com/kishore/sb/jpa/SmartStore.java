@@ -85,6 +85,7 @@ public class SmartStore {
 		entity.setCategories(String.join(",",
 				operation.getCategories().stream().map(Category::toString).collect(Collectors.toSet())));
 		entity.setAvoidDuplication(operation.getAvoidDuplication());
+		entity.setDeleteFromSource(operation.getDeleteFromSource());
 		return entity;
 	}
 
@@ -101,6 +102,7 @@ public class SmartStore {
 		}
 		operation.setCategories(categories);
 		operation.setAvoidDuplication(entity.getAvoidDuplication());
+		operation.setDeleteFromSource(entity.getDeleteFromSource());
 		return operation;
 	}
 

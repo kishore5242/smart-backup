@@ -7,7 +7,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -18,15 +17,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.kishore.sb.GlobalData;
-import com.kishore.sb.advice.ActionAdvisor;
-import com.kishore.sb.advice.DestinationAdvisor;
-import com.kishore.sb.advice.DuplicateAdvisor;
-import com.kishore.sb.advice.MimeTypeAdvisor;
+import com.kishore.sb.advice.Advisor;
+import com.kishore.sb.advice.AdvisorProvider;
 import com.kishore.sb.jpa.SmartStore;
 import com.kishore.sb.model.Action;
 import com.kishore.sb.model.Command;
 import com.kishore.sb.model.CommandStatus;
 import com.kishore.sb.model.Decision;
+import com.kishore.sb.util.AdvisorUtil;
 import com.kishore.sb.util.DateUtil;
 
 @Component
@@ -35,6 +33,9 @@ public class SmartService {
 	private static final Logger logger = LoggerFactory.getLogger(SmartService.class);
 	
 	private final Map<Integer, CompletableFuture<String>> runningCommands = new ConcurrentHashMap<>();
+	
+	@Autowired
+	Collection<AdvisorProvider> advisorProviders;
 
 	@Autowired
 	SmartStore store;
@@ -59,7 +60,7 @@ public class SmartService {
 		if(existing != null) {
 			logger.info("Cancelling command {} ...", command.getId());
 			existing.cancel(true);
-			runningCommands.remove(command.getId());
+			runningCommands.remove(command.getId());		
 		}
 	}
 	
@@ -73,16 +74,15 @@ public class SmartService {
 			Collection<File> sourceFiles = FileUtils.listFiles(source, null, true);
 			Stream<Decision> decisionStream = sourceFiles.stream().map(Decision::new);
 			
-			ActionAdvisor actionAdvisor = new ActionAdvisor(command);
-			MimeTypeAdvisor mimeTypeAdvisor = new MimeTypeAdvisor(command);
-			DestinationAdvisor destinationAdvisor = new DestinationAdvisor(command);
-			DuplicateAdvisor duplicateAdvisor = new DuplicateAdvisor(command);
+			Set<Advisor> advisors = advisorProviders.stream()
+					.filter(provider -> provider.appliesTo().contains(command.getOperation().getJob()))
+					.map(provider -> provider.getAdvisor(command))
+					.collect(Collectors.toSet());
+			
+			Advisor advisor = AdvisorUtil.combine(advisors);
 			
 			Set<Decision> decisions = decisionStream
-					.filter(actionAdvisor::advise)
-					.filter(mimeTypeAdvisor::advise)
-					.filter(destinationAdvisor::advise)
-					.filter(duplicateAdvisor::advise)
+					.filter(advisor::advise)
 					.collect(Collectors.toSet());
 			
 			executeDecisions(command, decisions, future);

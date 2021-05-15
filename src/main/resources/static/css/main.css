@@ -48,7 +48,22 @@ textarea::-webkit-scrollbar-thumb {
 }
 
 .job-form {
-	background-color: gray;
+	background-color: #1c231e;
 	padding: 20px;
 	border-radius: 20px;
+	color: white;
+}
+
+#job-selector {
+    width: 40%;
+    background-color: #1c231e;
+    border: none;
+    border-radius: 5px;
+    padding: 10px;
+    font-size: 19pt;
+    color: white;
+}
+
+.checkbox-span {
+	margin-right: 5%;
 }
