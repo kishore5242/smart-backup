@@ -39,12 +39,10 @@ public class DestinationAdvisorProvider implements AdvisorProvider {
 		
 		private Command command;
 		private String destDir;
-		private String currMonth;
 
 		public DestinationAdvisor(Command command) {
 			this.command = command;
 			this.destDir = command.getRhs();
-			this.currMonth = DateUtil.timeStamp("yyyyMMdd");
 		}
 		
 		@Override
@@ -55,15 +53,18 @@ public class DestinationAdvisorProvider implements AdvisorProvider {
 		@Override
 		public boolean advise(Decision decision) {
 			String destination;
+			File source = decision.getSource();
+
 			if(command.getOperation().getJob() == BACKUP) {
-				if(size(decision.getSource()) <= MIN_SIZE) {
-					destination = destDir + "/" + currMonth + "/" + decision.getCategory() + "/Low quality/" + decision.getSource().getName();
+				if(size(source) <= MIN_SIZE) {
+					destination = destDir + "/" + decision.getTimeStamp() + "/" + decision.getCategory() + "/Small/" + source.getName();
 				} else {
-					destination = destDir + "/" + currMonth + "/" + decision.getCategory() + "/" + decision.getSource().getName();
+					destination = destDir + "/" + decision.getTimeStamp() + "/" + decision.getCategory() + "/" + source.getName();
 				}
 			} else {
-				destination = command.getRhs() + "/" + getRelativePath(decision.getSource(), command.getLhs());
+				destination = command.getRhs() + "/" + getRelativePath(source, command.getLhs());
 			}
+
 			decision.setDestination(new File(destination));
 			return true;
 		}

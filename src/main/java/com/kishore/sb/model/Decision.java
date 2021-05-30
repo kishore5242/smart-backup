@@ -8,9 +8,11 @@ public class Decision {
 	private Action action;
 	private File destination;
 	private Category category;
+	private String timeStamp;
 
-	public Decision(File source) {
+	public Decision(File source, String timeStamp) {
 		this.source = source;
+		this.timeStamp = timeStamp;
 	}
 
 	public File getSource() {
@@ -43,5 +45,13 @@ public class Decision {
 
 	public void setCategory(Category category) {
 		this.category = category;
+	}
+
+	public String getTimeStamp() {
+		return timeStamp;
+	}
+
+	public void setTimeStamp(String timeStamp) {
+		this.timeStamp = timeStamp;
 	}
 }

@@ -1,6 +1,7 @@
 body {
   padding-top: 5rem;
   background-color: #283618;
+  min-height: 1000px;
 }
 
 .navbar {

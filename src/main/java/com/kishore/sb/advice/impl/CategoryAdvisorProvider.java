@@ -45,51 +45,46 @@ public class CategoryAdvisorProvider implements AdvisorProvider {
 
 		@Override
 		public boolean advise(Decision decision) {
-
 			Set<Category> categories = command.getOperation().getCategories();
-			
-			String type = getMimeType(decision.getSource().getName());
-			if (type == null) {
-				return false;
-			}
+			Category category = getCategory(decision.getSource().getName());
 
-			// image filter
-			if (categories.contains(Category.IMAGES) && type.startsWith("image")) {
-				decision.setCategory(Category.IMAGES);
-				return true;
-			}
-			// video filter
-			else if (categories.contains(Category.VIDEOS) && type.startsWith("video")) {
-				decision.setCategory(Category.VIDEOS);
-				return true;
-			}
-			// document filter
-			else if (categories.contains(Category.DOCUMENTS)) {
-				String ext = getExtention(type);
-				if (Category.DOCUMENT_EXTS.contains(ext)) {
-					decision.setCategory(Category.DOCUMENTS);
-					return true;
-				}
-			}
-			// audio filter
-			else if (categories.contains(Category.AUDIO) && type.startsWith("audio")) {
-				decision.setCategory(Category.AUDIO);
-				return true;
-			}
-			// others filter
-			if (categories.contains(Category.OTHERS)) {
-				decision.setCategory(Category.OTHERS);
+			// filter if selected
+			if (categories.contains(category)) {
+				decision.setCategory(category);
 				return true;
 			}
 
 			return false;
 		}
 
-		private String getMimeType(String path) {
-			return URLConnection.guessContentTypeFromName(path);
+		private Category getCategory(String path) {
+
+			String mimeType = URLConnection.guessContentTypeFromName(path);
+
+			// check if directory
+			if(mimeType == null) {
+				return Category.OTHERS;
+			}
+			// check if img, videos, audio
+			else if (mimeType.startsWith("image")) {
+				return Category.IMAGES;
+			}
+			else if (mimeType.startsWith("video")) {
+				return Category.VIDEOS;
+			}
+			else if (mimeType.startsWith("audio")) {
+				return Category.AUDIO;
+			}
+			// check if document
+			String ext = getExtension(mimeType);
+			if (Category.DOCUMENT_EXTS.contains(ext)) {
+				return Category.DOCUMENTS;
+			}
+			// others
+			return Category.OTHERS;
 		}
 
-		private String getExtention(String path) {
+		private String getExtension(String path) {
 			return FilenameUtils.getExtension(path).toLowerCase();
 		}
 

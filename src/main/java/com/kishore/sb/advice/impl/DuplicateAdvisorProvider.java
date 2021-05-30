@@ -5,13 +5,13 @@ import static com.kishore.sb.model.Job.COPY;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
+import com.kishore.sb.controller.CommandController;
 import org.apache.commons.io.FileUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import com.kishore.sb.advice.Advisor;
@@ -22,6 +22,8 @@ import com.kishore.sb.model.Job;
 
 @Component
 public class DuplicateAdvisorProvider implements AdvisorProvider {
+
+	private static final Logger logger = LoggerFactory.getLogger(DuplicateAdvisorProvider.class);
 	
 	@Override
 	public Set<Job> appliesTo() {
@@ -43,11 +45,20 @@ public class DuplicateAdvisorProvider implements AdvisorProvider {
 			this.command = command;
 			if(command.getOperation().getAvoidDuplication()) {
 				File referenceDir = new File(command.getRhs());
-				referenceFiles = FileUtils.listFiles(referenceDir, null, true);
+				referenceFiles = getReferenceFiles(referenceDir);
 				this.referenceFiles.stream().forEach(file -> referenceFileNames.add(file.getName()));
 			}
 		}
-		
+
+		private Collection<File> getReferenceFiles(File referenceDir) {
+			try {
+				return FileUtils.listFiles(referenceDir, null, true);
+			} catch (IllegalArgumentException e) {
+				logger.warn("Could not get reference files for duplicate advisor");
+			}
+			return Collections.emptyList();
+		}
+
 		@Override
 		public int order() {
 			return 40;
@@ -55,8 +66,9 @@ public class DuplicateAdvisorProvider implements AdvisorProvider {
 
 		@Override
 		public boolean advise(Decision decision) {
-			if(command.getOperation().getAvoidDuplication()) {
-				return !isDuplicate(decision.getSource());
+			File source = decision.getSource();
+			if(command.getOperation().getAvoidDuplication() && source.isFile()) {
+				return !isDuplicate(source);
 			}
 			return true;
 		}

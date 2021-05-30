@@ -2,15 +2,14 @@ package com.kishore.sb.service;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Collection;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.filefilter.TrueFileFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +25,7 @@ import com.kishore.sb.model.CommandStatus;
 import com.kishore.sb.model.Decision;
 import com.kishore.sb.util.AdvisorUtil;
 import com.kishore.sb.util.DateUtil;
+import org.springframework.util.CollectionUtils;
 
 @Component
 public class SmartService {
@@ -67,12 +67,12 @@ public class SmartService {
 	private void runSync(Command command, CompletableFuture<String> future) {
 		try {
 			logger.info("Begin operation - {}", command.getOperation().getName());
-			data.setCommandInfo(command.getId(), CommandStatus.RUNNING, "Running...");
-			
+			String timeStamp = DateUtil.timeStamp("yyyyMMdd");
+			data.setCommandInfo(command.getId(), CommandStatus.RUNNING, "Running... day(" + timeStamp + ")");
 			File source = new File(command.getLhs());
-			
-			Collection<File> sourceFiles = FileUtils.listFiles(source, null, true);
-			Stream<Decision> decisionStream = sourceFiles.stream().map(Decision::new);
+			Collection<File> sourceFiles = FileUtils.listFilesAndDirs(source, TrueFileFilter.INSTANCE, TrueFileFilter.INSTANCE);
+			sourceFiles.remove(source);
+			Stream<Decision> decisionStream = sourceFiles.stream().map(file -> new Decision(file, timeStamp));
 			
 			Set<Advisor> advisors = advisorProviders.stream()
 					.filter(provider -> provider.appliesTo().contains(command.getOperation().getJob()))
@@ -101,29 +101,51 @@ public class SmartService {
 		
 		int total = decisions.size();
 		int processed = 0;
+
+		Set<File> dirsToDelete = new HashSet<>();
 		
 		for(Decision decision: decisions) {
 			
 			if(future.isCancelled()) {
 				break;
 			}
-			
-			if(decision.getAction() == Action.COPY) {
-				FileUtils.copyFile(decision.getSource(), decision.getDestination(), true);
-				
-			} else if(decision.getAction() == Action.MOVE) {
-				FileUtils.copyFile(decision.getSource(), decision.getDestination(), true);
-				FileUtils.forceDelete(decision.getSource());
-				
+
+			File source = decision.getSource();
+
+			if(decision.getAction() == Action.COPY || decision.getAction() == Action.MOVE) {
+				if(source.isDirectory()) {
+					decision.getDestination().mkdirs();
+				} else {
+					FileUtils.copyFile(source, decision.getDestination(), true);
+					// delete from source
+					if(decision.getAction() == Action.MOVE) {
+						forceDeleteSilently(source);
+					}
+				}
+
 			} else if(decision.getAction() == Action.DELETE) {
-				FileUtils.forceDelete(decision.getSource());
+				// consider directory deletion for later
+				if(source.isDirectory()) {
+					dirsToDelete.add(source);
+					processed++;
+					continue;
+				} else {
+					forceDeleteSilently(source);
+				}
 			}
 
 			processed ++;
 			int progress = ( processed * 100 ) / total;
-			String comment = progress + "% - " + decision.getAction() + " - " + decision.getSource().getAbsolutePath() + " ---> " + decision.getDestination();
+			String comment = progress + "% - " + decision.getAction() + " - " + source.getAbsolutePath() + " ---> " + decision.getDestination();
 			data.setCommandInfo(command.getId(), CommandStatus.RUNNING, comment, progress);
 			logger.info(comment);
+		}
+
+		for(File dir: dirsToDelete) {
+			Collection<File> files = listFilesSilently(dir);
+			if(CollectionUtils.isEmpty(files)) {
+				forceDeleteSilently(dir);
+			}
 		}
 		
 		String comment = "";
@@ -135,6 +157,23 @@ public class SmartService {
 			data.setCommandInfo(command.getId(), CommandStatus.COMPLETED, comment, 100);
 		}
 		logger.info(comment);
+	}
+
+	private void forceDeleteSilently(File dir) throws IOException {
+		try {
+			FileUtils.forceDelete(dir);
+		} catch (IOException e) {
+			logger.info("Ignoring as " + e.getMessage());
+		}
+	}
+
+	private Collection<File> listFilesSilently(File dir) {
+		try {
+			return FileUtils.listFiles(dir, null, true);
+		} catch (IllegalArgumentException e) {
+			logger.info(dir + " may not exist");
+		}
+		return Collections.emptyList();
 	}
 
 }

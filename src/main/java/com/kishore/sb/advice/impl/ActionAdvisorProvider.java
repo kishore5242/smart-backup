@@ -44,6 +44,9 @@ public class ActionAdvisorProvider implements AdvisorProvider {
 
 			Job job = command.getOperation().getJob();
 			if (job == Job.COPY || job == Job.BACKUP) {
+				if(decision.getSource().isDirectory()) {
+					return false;
+				}
 				decision.setAction(Action.COPY);
 				if(command.getOperation().getDeleteFromSource()) {
 					decision.setAction(Action.MOVE);
