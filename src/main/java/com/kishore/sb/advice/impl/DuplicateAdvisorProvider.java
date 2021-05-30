@@ -6,6 +6,7 @@ import static com.kishore.sb.model.Job.COPY;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -35,14 +36,14 @@ public class DuplicateAdvisorProvider implements AdvisorProvider {
 	private class DuplicateAdvisor implements Advisor {
 
 		private Command command;
-		private List<File> referenceFiles = new ArrayList<>();
+		private Collection<File> referenceFiles;
 		private List<String> referenceFileNames = new ArrayList<>();
 
 		public DuplicateAdvisor(Command command) {
 			this.command = command;
 			if(command.getOperation().getAvoidDuplication()) {
 				File referenceDir = new File(command.getRhs());
-				listReferenceFiles(referenceDir);
+				referenceFiles = FileUtils.listFiles(referenceDir, null, true);
 				this.referenceFiles.stream().forEach(file -> referenceFileNames.add(file.getName()));
 			}
 		}
@@ -60,17 +61,6 @@ public class DuplicateAdvisorProvider implements AdvisorProvider {
 			return true;
 		}
 
-		private void listReferenceFiles(final File folder) {
-			for (final File f : folder.listFiles()) {
-				if (f.isDirectory()) {
-					listReferenceFiles(f);
-				}
-				if (f.isFile()) {
-					this.referenceFiles.add(f);
-				}
-			}
-		}
-
 		private boolean isDuplicate(File file) {
 			if (referenceFileNames.contains(file.getName())) {
 				List<File> existingFiles = findByName(this.referenceFiles, file.getName());
@@ -79,7 +69,7 @@ public class DuplicateAdvisorProvider implements AdvisorProvider {
 			return false;
 		}
 
-		private List<File> findByName(List<File> among, String name) {
+		private List<File> findByName(Collection<File> among, String name) {
 			return among.stream().filter(file -> file.getName().equals(name)).collect(Collectors.toList());
 		}
 

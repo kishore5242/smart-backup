@@ -4,7 +4,11 @@ import static com.kishore.sb.model.Job.BACKUP;
 import static com.kishore.sb.model.Job.COPY;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Set;
 
 import org.springframework.stereotype.Component;
@@ -31,6 +35,8 @@ public class DestinationAdvisorProvider implements AdvisorProvider {
 	
 	private class DestinationAdvisor implements Advisor {
 		
+		private static final long MIN_SIZE = 100000;
+		
 		private Command command;
 		private String destDir;
 		private String currMonth;
@@ -50,7 +56,11 @@ public class DestinationAdvisorProvider implements AdvisorProvider {
 		public boolean advise(Decision decision) {
 			String destination;
 			if(command.getOperation().getJob() == BACKUP) {
-				destination = destDir + "/" + currMonth + "/" + decision.getCategory() + "/" + decision.getSource().getName();
+				if(size(decision.getSource()) <= MIN_SIZE) {
+					destination = destDir + "/" + currMonth + "/" + decision.getCategory() + "/Low quality/" + decision.getSource().getName();
+				} else {
+					destination = destDir + "/" + currMonth + "/" + decision.getCategory() + "/" + decision.getSource().getName();
+				}
 			} else {
 				destination = command.getRhs() + "/" + getRelativePath(decision.getSource(), command.getLhs());
 			}
@@ -65,6 +75,16 @@ public class DestinationAdvisorProvider implements AdvisorProvider {
 			// create a relative path from the two paths
 			URI relativePath = pathUri.relativize(fileUri);
 			return relativePath.getPath();
+		}
+		
+		private long size(File file) {
+			try {
+				Path path = Paths.get(file.getAbsolutePath());
+				return Files.size(path);
+			} catch (IOException e) {
+				System.out.println("Could not calculate size of " + file);
+			}
+			return -1;
 		}
 
 	}
